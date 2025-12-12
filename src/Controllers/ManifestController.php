@@ -6,99 +6,200 @@ use SilverStripe\Control\Controller;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Control\Director;
 
-class ManifestController extends Controller {
-
-    /**
-     * @var array
-     */
+class ManifestController extends Controller
+{
     private static $allowed_actions = [
         'index'
     ];
 
     /**
-     * Default controller action for the manifest.json file
+     * Generate and return the web app manifest (manifest.json)
+     * Follows W3C Web App Manifest specification (2025 standards)
      *
-     * @return mixed
+     * @param mixed $url
+     * @return string JSON manifest
      */
-    public function index($url) {
-
-        // Generate Manifest from ManifestSiteConfigExtension
+    public function index($url)
+    {
         $config = SiteConfig::current_site_config();
-        $baseURL = Director::BaseURL();
-        $manifestContent = [];
-        $manifestContent['start_url'] = $baseURL;
+        $baseURL = Director::absoluteBaseURL();
+        $manifest = [];
 
-        if($config->ManifestName){
-            $manifestContent['name'] = $config->ManifestName;
-        }
-        if($config->ManifestShortName){
-            $manifestContent['short_name'] = $config->ManifestShortName;
-        }
-        if($config->ManifestDescription){
-            $manifestContent['description'] = $config->ManifestDescription;
-        }
-        if($config->ManifestColor){
-            $manifestContent['background_color'] = $config->ManifestColor;
-            $manifestContent['theme_color'] = $config->ManifestColor;
-        }
-        if($config->ManifestOrientation){
-            $manifestContent['orientation'] = $config->ManifestOrientation;
-        }
-        if($config->ManifestDisplay){
-            $manifestContent['display'] = $config->ManifestDisplay;
+        // App Identity
+        $startUrl = $config->ManifestStartUrl ?: '/';
+        $manifest['start_url'] = $startUrl;
+        $manifest['id'] = $config->ManifestId ?: $startUrl;
+
+        if ($config->ManifestScope) {
+            $manifest['scope'] = $config->ManifestScope;
         }
 
-        // Resample icon for different sizes (Desktop icon, mobile icon etc.)
+        // Core properties
+        if ($config->ManifestName) {
+            $manifest['name'] = $config->ManifestName;
+        }
+
+        if ($config->ManifestShortName) {
+            $manifest['short_name'] = $config->ManifestShortName;
+        }
+
+        if ($config->ManifestDescription) {
+            $manifest['description'] = $config->ManifestDescription;
+        }
+
+        // Display settings
+        $manifest['display'] = $config->ManifestDisplay ?: 'standalone';
+
+        if ($config->ManifestOrientation) {
+            $manifest['orientation'] = $config->ManifestOrientation;
+        }
+
+        // Colors
+        if ($config->ManifestColor) {
+            $manifest['theme_color'] = $config->ManifestColor;
+        }
+
+        if ($config->ManifestBackgroundColor) {
+            $manifest['background_color'] = $config->ManifestBackgroundColor;
+        } elseif ($config->ManifestColor) {
+            $manifest['background_color'] = $config->ManifestColor;
+        }
+
+        // Language & direction
+        if ($config->ManifestLang) {
+            $manifest['lang'] = $config->ManifestLang;
+        }
+
+        if ($config->ManifestDir && $config->ManifestDir !== 'auto') {
+            $manifest['dir'] = $config->ManifestDir;
+        }
+
+        // Categories
+        if ($config->ManifestCategories) {
+            $manifest['categories'] = [$config->ManifestCategories];
+        }
+
+        // Icons - Generate multiple sizes from uploaded logo
+        $icons = $this->generateIcons($config);
+        if (!empty($icons)) {
+            $manifest['icons'] = $icons;
+        }
+
+        // Screenshots
+        $screenshots = $this->generateScreenshots($config);
+        if (!empty($screenshots)) {
+            $manifest['screenshots'] = $screenshots;
+        }
+
+        // Shortcuts
+        $shortcuts = $this->generateShortcuts($config);
+        if (!empty($shortcuts)) {
+            $manifest['shortcuts'] = $shortcuts;
+        }
+
+        // Set response headers
+        $this->getResponse()->addHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+        $this->getResponse()->addHeader('Cache-Control', 'public, max-age=86400');
+
+        return json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * Generate icon array for manifest with multiple sizes
+     * Includes both standard and maskable icons
+     *
+     * @param SiteConfig $config
+     * @return array
+     */
+    private function generateIcons(SiteConfig $config): array
+    {
+        $icons = [];
+        $sizes = [48, 72, 96, 128, 144, 152, 192, 384, 512];
+
         $logo = $config->ManifestLogo();
-        if($logo && $logo->exists()){
+        if ($logo && $logo->exists()) {
             $mime = $logo->getMimeType();
-            $manifestContent['icons'] = [
-                [
-                    'src' => $logo->Fill(48,48)->Link(),
-                    'sizes' => '48x48',
-                    'type' => $mime
-                ],
-                [
-                    'src' => $logo->Fill(72,72)->Link(),
-                    'sizes' => '72x72',
-                    'type' => $mime
-                ],
-                [
-                    'src' => $logo->Fill(96,96)->Link(),
-                    'sizes' => '96x96',
-                    'type' => $mime
-                ],
-                [
-                    'src' => $logo->Fill(144,144)->Link(),
-                    'sizes' => '144x144',
-                    'type' => $mime
-                ],
-                [
-                    'src' => $logo->Fill(168,168)->Link(),
-                    'sizes' => '168x168',
-                    'type' => $mime
-                ],
-                [
-                    'src' => $logo->Fill(192,192)->Link(),
-                    'sizes' => '192x192',
-                    'type' => $mime
-                ],
-                [
-                    'src' => $logo->Fill(256,256)->Link(),
-                    'sizes' => '256x256',
-                    'type' => $mime
-                ],
-                [
-                    'src' => $logo->Fill(512,512)->Link(),
-                    'sizes' => '512x512',
-                    'type' => $mime
-                ]
+
+            foreach ($sizes as $size) {
+                $icons[] = [
+                    'src' => $logo->Fill($size, $size)->getAbsoluteURL(),
+                    'sizes' => "{$size}x{$size}",
+                    'type' => $mime,
+                    'purpose' => 'any'
+                ];
+            }
+        }
+
+        // Add maskable icon if provided
+        $maskableIcon = $config->ManifestMaskableIcon();
+        if ($maskableIcon && $maskableIcon->exists()) {
+            $maskableSizes = [192, 512];
+            $mime = $maskableIcon->getMimeType();
+
+            foreach ($maskableSizes as $size) {
+                $icons[] = [
+                    'src' => $maskableIcon->Fill($size, $size)->getAbsoluteURL(),
+                    'sizes' => "{$size}x{$size}",
+                    'type' => $mime,
+                    'purpose' => 'maskable'
+                ];
+            }
+        }
+
+        return $icons;
+    }
+
+    /**
+     * Generate screenshots array for manifest
+     *
+     * @param SiteConfig $config
+     * @return array
+     */
+    private function generateScreenshots(SiteConfig $config): array
+    {
+        $screenshots = [];
+
+        $wideScreenshot = $config->ManifestScreenshotWide();
+        if ($wideScreenshot && $wideScreenshot->exists()) {
+            $screenshots[] = [
+                'src' => $wideScreenshot->getAbsoluteURL(),
+                'sizes' => $wideScreenshot->getWidth() . 'x' . $wideScreenshot->getHeight(),
+                'type' => $wideScreenshot->getMimeType(),
+                'form_factor' => 'wide',
+                'label' => $config->ManifestName ?: 'App Screenshot'
             ];
         }
 
-        $this->getResponse()->addHeader('Content-Type', 'application/manifest+json; charset="utf-8"');
-        return json_encode($manifestContent);
+        $narrowScreenshot = $config->ManifestScreenshotNarrow();
+        if ($narrowScreenshot && $narrowScreenshot->exists()) {
+            $screenshots[] = [
+                'src' => $narrowScreenshot->getAbsoluteURL(),
+                'sizes' => $narrowScreenshot->getWidth() . 'x' . $narrowScreenshot->getHeight(),
+                'type' => $narrowScreenshot->getMimeType(),
+                'form_factor' => 'narrow',
+                'label' => $config->ManifestName ?: 'App Screenshot'
+            ];
+        }
 
+        return $screenshots;
     }
 
+    /**
+     * Generate shortcuts array for manifest
+     *
+     * @param SiteConfig $config
+     * @return array
+     */
+    private function generateShortcuts(SiteConfig $config): array
+    {
+        $shortcuts = [];
+
+        if ($config->hasMethod('ManifestShortcuts')) {
+            foreach ($config->ManifestShortcuts()->limit(4) as $shortcut) {
+                $shortcuts[] = $shortcut->toManifestArray();
+            }
+        }
+
+        return $shortcuts;
+    }
 }

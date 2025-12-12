@@ -4,61 +4,113 @@ namespace SilverStripePWA\Controllers;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\View\ArrayData;
-use SilverStripe\Core\ClassInfo;
+use SilverStripe\SiteConfig\SiteConfig;
 
-class ServiceWorkerController extends Controller {
-
-    /**
-     * @var array
-     */
+class ServiceWorkerController extends Controller
+{
     private static $allowed_actions = [
         'index'
     ];
-    
-    /**
-     * @config
-     */
-    private static $debug_mode = false;
 
-    /**
-     * Default controller action for the service-worker.js file
-     *
-     * @return mixed
-     */
-    public function index($url) {
+    public function index($url)
+    {
+        $config = SiteConfig::current_site_config();
+
+        // Check if service worker is disabled
+        if ($config->hasField('ServiceWorkerEnabled') && !$config->ServiceWorkerEnabled) {
+            $this->getResponse()->addHeader('Content-Type', 'application/javascript; charset="utf-8"');
+            return '// Service worker is disabled';
+        }
+
         $this->getResponse()->addHeader('Content-Type', 'application/javascript; charset="utf-8"');
         return $this->renderWith('ServiceWorker');
     }
-    
-    /**
-     * Base URL
-     * @return varchar
-     */
-    public function BaseUrl() {
+
+    public function BaseUrl()
+    {
         return Director::baseURL();
     }
 
-    
-    /**
-     * Public Key
-     * @return varchar
-     */
-    public function PublicKey() {
-        $key = (string)file_get_contents(__DIR__ . "/../../_config/public_key.txt");
-        return substr(trim($key), 0);;
-
+    public function PublicKey()
+    {
+        $config = SiteConfig::current_site_config();
+        return $config->VapidPublicKey ?: '';
     }
-    /**
-     * Debug mode
-     * @return bool
-     */
-    public function DebugMode() {
-        if(Director::isDev()){
+
+    public function DebugMode()
+    {
+        $config = SiteConfig::current_site_config();
+
+        if (Director::isDev()) {
             return true;
         }
-        return $this->config()->get('debug_mode');
+
+        return $config->hasField('ServiceWorkerDebug') ? $config->ServiceWorkerDebug : false;
     }
 
+    public function CacheStrategy()
+    {
+        $config = SiteConfig::current_site_config();
+        return $config->hasField('CacheStrategy') ? $config->CacheStrategy : 'network-first';
+    }
+
+    public function CacheVersion()
+    {
+        $config = SiteConfig::current_site_config();
+        return $config->hasField('CacheVersion') ? $config->CacheVersion : 'v1';
+    }
+
+    public function OfflineModeEnabled()
+    {
+        $config = SiteConfig::current_site_config();
+        return !$config->hasField('OfflineModeEnabled') || $config->OfflineModeEnabled;
+    }
+
+    public function PushNotificationsEnabled()
+    {
+        $config = SiteConfig::current_site_config();
+        return !$config->hasField('PushNotificationsEnabled') || $config->PushNotificationsEnabled;
+    }
+
+    public function PrecacheUrls()
+    {
+        $config = SiteConfig::current_site_config();
+
+        if ($config->hasMethod('getPrecacheUrlsArray')) {
+            return json_encode($config->getPrecacheUrlsArray());
+        }
+
+        return '[]';
+    }
+
+    public function ExcludeUrlPatterns()
+    {
+        $config = SiteConfig::current_site_config();
+
+        if ($config->hasMethod('getExcludeUrlPatternsArray')) {
+            return json_encode($config->getExcludeUrlPatternsArray());
+        }
+
+        return '[]';
+    }
+
+    public function CacheMaxAge()
+    {
+        $config = SiteConfig::current_site_config();
+        return $config->hasField('CacheMaxAge') ? (int)$config->CacheMaxAge : 86400;
+    }
+
+    /**
+     * Get notification action buttons as JSON
+     */
+    public function NotificationActions()
+    {
+        $config = SiteConfig::current_site_config();
+
+        if ($config->hasMethod('getNotificationActions')) {
+            return json_encode($config->getNotificationActions());
+        }
+
+        return '[]';
+    }
 }

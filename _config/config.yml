@@ -10,14 +10,18 @@ SilverStripe\Control\Director:
     'offline.html': 'SilverStripePWA\Controllers\OfflinePageController'
     'push': 'SilverStripePWA\Controllers\SendPushNotificationController'
     'RegisterSubscription': 'SilverStripePWA\Controllers\RegisterSubscriptionController'
+    'pwa-generate-vapid-keys': 'SilverStripePWA\Controllers\GenerateVapidKeysController'
 
 SilverStripe\SiteConfig\SiteConfig:
     extensions:
         - SilverStripePWA\Extensions\ManifestSiteConfigExtension
         - SilverStripePWA\Extensions\PushNotificationsSiteConfigExtension
+        - SilverStripePWA\Extensions\ServiceWorkerSiteConfigExtension
+        - SilverStripePWA\Extensions\OfflinePageSiteConfigExtension
 
 # Add the push-extension to the page of your choosing
-
-# Example\Example\ArticlePage:
+#
+# Example:
+# Page:
 #     extensions:
-#         - SilverStripePWA\Extensions\PushArticleExtension
+#         - SilverStripePWA\Extensions\PushPageExtension

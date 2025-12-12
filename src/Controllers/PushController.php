@@ -1,74 +1,66 @@
 <?php
+
 namespace SilverStripePWA\Controllers;
 
-use Minishlink\WebPush\WebPush;
-use Minishlink\WebPush\Subscription;
-use Minishlink\WebPush\VAPID;
-use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\Controller;
-
+use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripePWA\Models\Subscriber;
+use SilverStripePWA\Services\WebPushService;
 
 class PushController extends Controller
 {
-    public function sendPush($content)
+    /**
+     * Send push notification to all subscribers
+     *
+     * @param string $content JSON payload for the notification
+     * @return string JSON response with delivery status
+     */
+    public function sendPush(string $content): string
     {
-
-        // Get subs from db
         $subscribers = Subscriber::get();
 
-        // Create VAPID (Voluntary Application Server Identification) [optional - required for sending notification with payload]
-        $auth = [
-            'VAPID' => [
-                'subject' => 'mailto:michiel@violet88.nl',
-                'publicKey' => file_get_contents(__DIR__ . "/../../_config/public_key.txt"),
-                'privateKey' => file_get_contents(__DIR__ . "/../../_config/private_key.txt"),           
-            ],
-        ];
-        // Create new WebPush with authentication
-        $webPush = new WebPush($auth);
-
-        // Get content from parameter
-        $payload = $content;
-
-        // Loop through subcribers & create new subscription -> send push to subscription
-        foreach($subscribers as $subscriber) {
-            
-            $subscriberArray = [
-                'endpoint' => $subscriber->endpoint,
-                'publicKey' => $subscriber->publicKey,
-                'authToken' => $subscriber->authToken,
-                'contentEncoding' => $subscriber->contentEncoding
-            ];
-
-            $sub = Subscription::create($subscriberArray);
-
-            // Push it!
-            $sent = $webPush->sendNotification($sub, $payload);
-    
+        if ($subscribers->count() === 0) {
+            return json_encode(['status' => 'No subscribers found']);
         }
 
-        // Get respons from subscription & react accordingly
+        $config = SiteConfig::current_site_config();
+
+        if (!$config->VapidPublicKey || !$config->VapidPrivateKey) {
+            return json_encode(['error' => 'VAPID keys not configured. Please generate keys in Settings > Manifest.']);
+        }
+
+        $vapidSubject = $config->VapidSubject ?: 'mailto:admin@example.com';
+
+        $webPush = new WebPushService(
+            $config->VapidPublicKey,
+            $config->VapidPrivateKey,
+            $vapidSubject
+        );
+
         $response = [];
-        foreach ($webPush->flush() as $report) {
-            $endpoint = $report->getRequest()->getUri()->__toString();
-            $this->getResponse()->addHeader('Content-Type', 'application/json; charset="utf-8"');
-            
-            if ($report->isSuccess()) {
-                $response[$endpoint] = "Pushed to client!";
+
+        foreach ($subscribers as $subscriber) {
+            $subscription = [
+                'endpoint' => $subscriber->endpoint,
+                'publicKey' => $subscriber->publicKey,
+                'authToken' => $subscriber->authToken
+            ];
+
+            $result = $webPush->send($subscription, $content);
+
+            if ($result['success']) {
+                $response[$subscriber->endpoint] = 'Delivered';
             } else {
-                $isTheEndpointWrongOrExpired = $report->isSubscriptionExpired();
-                if($isTheEndpointWrongOrExpired) {
-                    // Delete subscriber from db
-                    $subscription = $subscribers->find('endpoint', $endpoint);
-                    $subscription->delete();
-                    $response[$endpoint] = "Push Failed, device no longer subscribed -> subscription removed from DB";
+                if ($result['expired']) {
+                    $subscriber->delete();
+                    $response[$subscriber->endpoint] = 'Subscription expired - removed from database';
                 } else {
-                    $response[$endpoint] = "Push Failed :( {$report->getReason()}";
+                    $response[$subscriber->endpoint] = 'Failed: ' . $result['message'];
                 }
             }
         }
-                 
+
+        $this->getResponse()->addHeader('Content-Type', 'application/json; charset=utf-8');
         return json_encode($response);
     }
 }

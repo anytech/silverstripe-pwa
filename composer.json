@@ -1,48 +1,61 @@
 {
-    "name": "Anytech/silverstripe-pwa",
-    "description": "Module that adds PWA support to SilverStripe project",
-    "homepage": "http://github.com/mdiederen/silverstripe-pwa",
+    "name": "anytech/silverstripe-pwa",
+    "description": "Progressive Web App (PWA) module for SilverStripe 4/5 with Web Manifest, Service Worker, and Push Notifications support",
+    "homepage": "https://github.com/anytech/silverstripe-pwa",
     "type": "silverstripe-vendormodule",
     "keywords": [
         "silverstripe",
-        "progressive",
-        "web",
-        "app",
-        "PWA",
-        "Push",
-        "notifications",
-        "service worker",
-        "manifest"
+        "progressive-web-app",
+        "pwa",
+        "service-worker",
+        "web-manifest",
+        "push-notifications",
+        "vapid",
+        "offline-first",
+        "installable",
+        "web-push"
     ],
     "license": "MIT",
-    "authors": [{
-        "name": "Kayne Middleton",
-        "email": "kayne@anytech.ca"
-    }],
+    "authors": [
+        {
+            "name": "Kayne Middleton",
+            "email": "kayne@anytech.ca",
+            "homepage": "https://anytech.ca",
+            "role": "Maintainer"
+        }
+    ],
     "support": {
-        "issues": "http://github.com/Anytech/silverstripe-pwa/issues"
+        "issues": "https://github.com/anytech/silverstripe-pwa/issues",
+        "source": "https://github.com/anytech/silverstripe-pwa"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "silverstripe/cms": "^4.0@dev",
-        "silverstripe/framework": "^4",
-        "silverstripe/vendor-plugin": "^1.0",
-        "silverware/colorpicker": "^1.0",
-        "minishlink/web-push": "^5.2"
-        },
+        "php": "^8.0",
+        "ext-openssl": "*",
+        "ext-curl": "*",
+        "silverstripe/cms": "^4.10 || ^5.0",
+        "silverstripe/framework": "^4.10 || ^5.0",
+        "silverstripe/vendor-plugin": "^1.0 || ^2.0"
+    },
     "autoload": {
         "psr-4": {
-            "anytech\\silverstripe-pwa\\": "src/"
+            "SilverStripePWA\\": "src/"
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.7"
+        "phpunit/phpunit": "^9.5 || ^10.0"
     },
     "extra": {
         "installer-name": "silverstripe-pwa",
         "expose": [
             "resources"
         ]
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "silverstripe/vendor-plugin": true
+        }
     }
 }
