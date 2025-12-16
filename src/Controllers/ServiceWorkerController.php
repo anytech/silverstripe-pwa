@@ -55,13 +55,15 @@ class ServiceWorkerController extends Controller
     public function CacheStrategy()
     {
         $config = SiteConfig::current_site_config();
-        return $config->hasField('CacheStrategy') ? $config->CacheStrategy : 'network-first';
+        $strategy = $config->hasField('CacheStrategy') ? $config->CacheStrategy : null;
+        return $strategy ?: 'network-first';
     }
 
     public function CacheVersion()
     {
         $config = SiteConfig::current_site_config();
-        return $config->hasField('CacheVersion') ? $config->CacheVersion : 'v1';
+        $version = $config->hasField('CacheVersion') ? $config->CacheVersion : null;
+        return $version ?: 'v1';
     }
 
     public function OfflineModeEnabled()
@@ -101,7 +103,8 @@ class ServiceWorkerController extends Controller
     public function CacheMaxAge()
     {
         $config = SiteConfig::current_site_config();
-        return $config->hasField('CacheMaxAge') ? (int)$config->CacheMaxAge : 86400;
+        $maxAge = $config->hasField('CacheMaxAge') ? (int)$config->CacheMaxAge : 0;
+        return $maxAge ?: 86400;
     }
 
     /**
