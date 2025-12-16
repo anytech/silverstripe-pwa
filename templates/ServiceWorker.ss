@@ -45,7 +45,7 @@ function shouldExclude(url) {
     // Check custom exclude patterns
     for (const pattern of EXCLUDE_PATTERNS) {
         if (pattern.includes('*')) {
-            const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+            const regex = new RegExp('^' + pattern.split('*').join('.*') + '$');
             if (regex.test(urlPath)) {
                 return true;
             }
