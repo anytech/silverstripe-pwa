@@ -110,6 +110,12 @@ self.addEventListener('fetch', (event) => {
     // Skip non-HTTP(S) requests
     if (!request.url.startsWith('http')) return;
 
+    // Skip cross-origin requests - let browser handle them directly
+    const url = new URL(request.url);
+    if (url.origin !== self.location.origin) {
+        return;
+    }
+
     // Skip excluded URLs
     if (shouldExclude(request.url)) {
         log('Excluding from cache:', request.url);
