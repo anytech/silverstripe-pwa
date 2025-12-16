@@ -1,8 +1,8 @@
 let isSubscribed = false;
 let swRegistration = null;
-const applicationKey = "$PublicKey";
+const applicationKey = "{$PublicKey}";
 const debug = <% if $DebugMode %>true<% else %>false<% end_if %>;
-const baseURL = "$BaseUrl";
+const baseURL = "{$BaseUrl}";
 
 // Console.log proxy for quick enabling/disabling
 function log(msg) {
