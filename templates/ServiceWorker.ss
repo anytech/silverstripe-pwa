@@ -4,12 +4,12 @@
  * Version: 2.1.0
  */
 
-const CACHE_VERSION = '$CacheVersion';
+const CACHE_VERSION = '{$CacheVersion}';
 const CACHE_NAME = `pwa-cache-<%text%>${CACHE_VERSION}<%/text%>`;
 const OFFLINE_CACHE = 'offline-cache';
 const DEBUG = <% if $DebugMode %>true<% else %>false<% end_if %>;
-const BASE_URL = '$BaseUrl';
-const CACHE_STRATEGY = '$CacheStrategy';
+const BASE_URL = '{$BaseUrl}';
+const CACHE_STRATEGY = '{$CacheStrategy}';
 const OFFLINE_ENABLED = <% if $OfflineModeEnabled %>true<% else %>false<% end_if %>;
 const PUSH_ENABLED = <% if $PushNotificationsEnabled %>true<% else %>false<% end_if %>;
 const CACHE_MAX_AGE = $CacheMaxAge;
