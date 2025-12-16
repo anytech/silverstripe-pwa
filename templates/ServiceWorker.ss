@@ -4,12 +4,12 @@
  * Version: 2.1.0
  */
 
-const CACHE_VERSION = '{$CacheVersion}';
-const CACHE_NAME = `pwa-cache-<%text%>${CACHE_VERSION}<%/text%>`;
+const CACHE_VERSION = '$CacheVersion';
+const CACHE_NAME = 'pwa-cache-' + CACHE_VERSION;
 const OFFLINE_CACHE = 'offline-cache';
 const DEBUG = <% if $DebugMode %>true<% else %>false<% end_if %>;
-const BASE_URL = '{$BaseUrl}';
-const CACHE_STRATEGY = '{$CacheStrategy}';
+const BASE_URL = '$BaseUrl';
+const CACHE_STRATEGY = '$CacheStrategy';
 const OFFLINE_ENABLED = <% if $OfflineModeEnabled %>true<% else %>false<% end_if %>;
 const PUSH_ENABLED = <% if $PushNotificationsEnabled %>true<% else %>false<% end_if %>;
 const CACHE_MAX_AGE = $CacheMaxAge;
@@ -25,7 +25,7 @@ const NOTIFICATION_ACTIONS = $NotificationActions;
 
 // Assets to pre-cache during installation
 const PRECACHE_ASSETS = OFFLINE_ENABLED
-    ? [`<%text%>${BASE_URL}<%/text%>offline.html`, ...CUSTOM_PRECACHE]
+    ? [BASE_URL + 'offline.html', ...CUSTOM_PRECACHE]
     : [...CUSTOM_PRECACHE];
 
 // Log helper for debug mode
@@ -159,7 +159,7 @@ async function networkFirst(request) {
 
         // For navigation requests, show offline page
         if (OFFLINE_ENABLED && request.mode === 'navigate') {
-            return caches.match(`<%text%>${BASE_URL}<%/text%>offline.html`);
+            return caches.match(BASE_URL + 'offline.html');
         }
 
         throw error;
@@ -188,7 +188,7 @@ async function cacheFirst(request) {
         return response;
     } catch (error) {
         if (OFFLINE_ENABLED && request.mode === 'navigate') {
-            return caches.match(`<%text%>${BASE_URL}<%/text%>offline.html`);
+            return caches.match(BASE_URL + 'offline.html');
         }
         throw error;
     }
@@ -221,7 +221,7 @@ async function staleWhileRevalidate(request) {
     if (response) return response;
 
     if (OFFLINE_ENABLED && request.mode === 'navigate') {
-        return caches.match(`<%text%>${BASE_URL}<%/text%>offline.html`);
+        return caches.match(BASE_URL + 'offline.html');
     }
 
     throw new Error('Network unavailable');
@@ -236,7 +236,7 @@ async function networkOnly(request) {
         return await fetch(request);
     } catch (error) {
         if (OFFLINE_ENABLED && request.mode === 'navigate') {
-            return caches.match(`<%text%>${BASE_URL}<%/text%>offline.html`);
+            return caches.match(BASE_URL + 'offline.html');
         }
         throw error;
     }
