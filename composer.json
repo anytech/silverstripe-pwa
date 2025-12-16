@@ -47,10 +47,7 @@
         "phpunit/phpunit": "^9.5 || ^10.0"
     },
     "extra": {
-        "installer-name": "silverstripe-pwa",
-        "expose": [
-            "resources"
-        ]
+        "installer-name": "silverstripe-pwa"
     },
     "config": {
         "allow-plugins": {
