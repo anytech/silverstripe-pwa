@@ -15,13 +15,13 @@ const PUSH_ENABLED = <% if $PushNotificationsEnabled %>true<% else %>false<% end
 const CACHE_MAX_AGE = $CacheMaxAge;
 
 // Custom URLs to pre-cache
-const CUSTOM_PRECACHE = $PrecacheUrls;
+const CUSTOM_PRECACHE = $PrecacheUrls.RAW;
 
 // URL patterns to exclude from caching
-const EXCLUDE_PATTERNS = $ExcludeUrlPatterns;
+const EXCLUDE_PATTERNS = $ExcludeUrlPatterns.RAW;
 
 // Notification action buttons
-const NOTIFICATION_ACTIONS = $NotificationActions;
+const NOTIFICATION_ACTIONS = $NotificationActions.RAW;
 
 // Assets to pre-cache during installation
 const PRECACHE_ASSETS = OFFLINE_ENABLED
