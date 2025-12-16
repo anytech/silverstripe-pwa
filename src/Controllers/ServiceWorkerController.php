@@ -14,6 +14,9 @@ class ServiceWorkerController extends Controller
 
     public function index($url)
     {
+        // Suppress PHP warnings/errors from appearing in JS output
+        @ini_set('display_errors', 0);
+        
         $config = SiteConfig::current_site_config();
 
         // Check if service worker is disabled
