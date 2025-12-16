@@ -4,9 +4,7 @@ namespace SilverStripePWA\Controllers;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\View\ArrayData;
-use SilverStripe\Core\ClassInfo;
+use SilverStripe\SiteConfig\SiteConfig;
 
 class RegisterServiceWorkerController extends Controller {
 
@@ -42,12 +40,11 @@ class RegisterServiceWorkerController extends Controller {
 
     /**
      * Public Key
-     * @return varchar
+     * @return string
      */
     public function PublicKey() {
-        $key = (string)file_get_contents(__DIR__ . "/../../_config/public_key.txt");
-        return substr(trim($key), 0);;
-
+        $config = SiteConfig::current_site_config();
+        return $config->VapidPublicKey ?: '';
     }
     
     /**
