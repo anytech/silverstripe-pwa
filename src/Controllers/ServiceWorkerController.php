@@ -26,6 +26,7 @@ class ServiceWorkerController extends Controller
         }
 
         $this->getResponse()->addHeader('Content-Type', 'application/javascript; charset="utf-8"');
+        $this->getResponse()->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         return $this->renderWith('ServiceWorker');
     }
 
