@@ -259,7 +259,7 @@ class WebPushService
             return null;
         }
 
-        $sharedSecret = openssl_pkey_derive($localKey, $remoteKey);
+        $sharedSecret = openssl_pkey_derive($remoteKey, $localKey);
 
         return $sharedSecret ?: null;
     }
