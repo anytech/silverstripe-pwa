@@ -25,23 +25,26 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
                     isSubscribed = !(subscription === null);
 
                     if (isSubscribed) {
-                        log('User is allready subscribed');
+                        log('User is already subscribed');
                     } else {
-                        swRegistration.pushManager.subscribe({
-                                userVisibleOnly: true,
-                                applicationServerKey: urlB64ToUint8Array(applicationKey)
-                            })
-                            .then(function (subscription) {
-                                console.table(subscription);
-                                log('User is subscribed');
+                        // Check current permission state
+                        if (Notification.permission === 'denied') {
+                            log('Notifications are blocked by user');
+                            return;
+                        }
 
-                                saveSubscription(subscription);
-
-                                isSubscribed = true;
-                            })
-                            .catch(function (err) {
-                                log('Failed to subscribe user: ', err);
-                            })
+                        // Request permission first if not granted
+                        if (Notification.permission === 'default') {
+                            Notification.requestPermission().then(function(permission) {
+                                if (permission === 'granted') {
+                                    subscribeToPush();
+                                } else {
+                                    log('Notification permission denied');
+                                }
+                            });
+                        } else if (Notification.permission === 'granted') {
+                            subscribeToPush();
+                        }
                     }
                 })
         })
@@ -50,6 +53,22 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
         });
 } else {
     console.warn('Push messaging is not supported');
+}
+
+// Subscribe to push notifications
+function subscribeToPush() {
+    swRegistration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlB64ToUint8Array(applicationKey)
+    })
+    .then(function (subscription) {
+        log('User is subscribed');
+        saveSubscription(subscription);
+        isSubscribed = true;
+    })
+    .catch(function (err) {
+        log('Failed to subscribe user: ' + err);
+    });
 }
 
 // Save the subscription to the database via POST-request
