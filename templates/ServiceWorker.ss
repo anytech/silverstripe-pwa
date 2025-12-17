@@ -254,9 +254,11 @@ async function networkOnly(request) {
  * Handle incoming push notifications
  */
 self.addEventListener('push', (event) => {
+    log('Push event received, PUSH_ENABLED:', PUSH_ENABLED);
+
     if (!PUSH_ENABLED) return;
 
-    log('Push notification received');
+    log('Processing push notification');
 
     let data = {
         title: 'New Notification',
@@ -273,8 +275,12 @@ self.addEventListener('push', (event) => {
 
     try {
         if (event.data) {
+            log('Raw data:', event.data.text());
             const payload = event.data.json();
+            log('Parsed payload:', payload);
             data = { ...data, ...payload };
+        } else {
+            log('No event.data');
         }
     } catch (e) {
         log('Error parsing push data:', e);
