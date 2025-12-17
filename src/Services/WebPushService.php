@@ -2,6 +2,10 @@
 
 namespace SilverStripePWA\Services;
 
+use Psr\Log\LoggerInterface;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\SiteConfig\SiteConfig;
+
 /**
  * Native PHP Web Push implementation
  * No external dependencies - uses PHP's built-in OpenSSL extension
@@ -11,12 +15,30 @@ class WebPushService
     private string $publicKey;
     private string $privateKey;
     private string $subject;
+    private bool $debug = false;
 
     public function __construct(string $publicKey, string $privateKey, string $subject)
     {
         $this->publicKey = $publicKey;
         $this->privateKey = $privateKey;
         $this->subject = $subject;
+
+        // Check debug mode from SiteConfig
+        $config = SiteConfig::current_site_config();
+        $this->debug = (bool)$config->ServiceWorkerDebug;
+    }
+
+    /**
+     * Log debug message if debug mode is enabled
+     */
+    private function log(string $message, array $context = []): void
+    {
+        if (!$this->debug) {
+            return;
+        }
+
+        $logger = Injector::inst()->get(LoggerInterface::class);
+        $logger->debug('[PWA WebPush] ' . $message, $context);
     }
 
     /**
@@ -33,15 +55,26 @@ class WebPushService
         $userPublicKey = $subscription['publicKey'];
         $userAuthToken = $subscription['authToken'];
 
+        $this->log('Sending push notification', [
+            'endpoint' => substr($endpoint, 0, 80) . '...',
+            'payload_length' => strlen($payload),
+            'ttl' => $ttl
+        ]);
+
         // Generate VAPID headers
+        $this->log('Generating VAPID headers');
         $vapidHeaders = $this->generateVapidHeaders($endpoint);
 
         // Encrypt the payload
+        $this->log('Encrypting payload');
         $encrypted = $this->encryptPayload($payload, $userPublicKey, $userAuthToken);
 
         if (!$encrypted) {
+            $this->log('Encryption failed');
             return ['success' => false, 'message' => 'Encryption failed', 'expired' => false];
         }
+
+        $this->log('Payload encrypted successfully', ['body_length' => strlen($encrypted['body'])]);
 
         // Send the request
         return $this->sendRequest($endpoint, $encrypted, $vapidHeaders, $ttl);
@@ -328,6 +361,11 @@ class WebPushService
             $headers[] = "$name: $value";
         }
 
+        $this->log('Sending HTTP request to push service', [
+            'endpoint' => $endpoint,
+            'headers' => $headers
+        ]);
+
         $ch = curl_init($endpoint);
         curl_setopt_array($ch, [
             CURLOPT_POST => true,
@@ -344,20 +382,29 @@ class WebPushService
         curl_close($ch);
 
         if ($error) {
+            $this->log('cURL error', ['error' => $error]);
             return ['success' => false, 'message' => 'cURL error: ' . $error, 'expired' => false];
         }
+
+        $this->log('Push service response', [
+            'http_code' => $httpCode,
+            'response' => $response
+        ]);
 
         // 201 = created (success)
         // 410 = gone (subscription expired)
         // 404 = not found (subscription expired)
         if ($httpCode === 201) {
+            $this->log('Push notification delivered successfully');
             return ['success' => true, 'message' => 'Delivered', 'expired' => false];
         }
 
         if ($httpCode === 410 || $httpCode === 404) {
+            $this->log('Subscription expired', ['http_code' => $httpCode]);
             return ['success' => false, 'message' => 'Subscription expired', 'expired' => true];
         }
 
+        $this->log('Push notification failed', ['http_code' => $httpCode, 'response' => $response]);
         return ['success' => false, 'message' => "HTTP $httpCode: $response", 'expired' => false];
     }
 

@@ -2,6 +2,8 @@
 
 namespace SilverStripePWA\Services;
 
+use Psr\Log\LoggerInterface;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Security\Member;
 use SilverStripePWA\Models\Subscriber;
@@ -43,6 +45,26 @@ class PushNotificationService
     private array $vibrate = [200, 100, 200];
     private int $ttl = 86400;
     private array $data = [];
+    private bool $debug = false;
+
+    public function __construct()
+    {
+        $config = SiteConfig::current_site_config();
+        $this->debug = (bool)$config->ServiceWorkerDebug;
+    }
+
+    /**
+     * Log debug message if debug mode is enabled
+     */
+    private function log(string $message, array $context = []): void
+    {
+        if (!$this->debug) {
+            return;
+        }
+
+        $logger = Injector::inst()->get(LoggerInterface::class);
+        $logger->debug('[PWA PushService] ' . $message, $context);
+    }
 
     /**
      * Create a new instance for fluent API
@@ -155,21 +177,28 @@ class PushNotificationService
     {
         $config = SiteConfig::current_site_config();
 
+        $this->log('sendToAll called');
+
         // Check if push is globally disabled
         if ($config->hasMethod('PushNotificationsEnabled') && !$config->PushNotificationsEnabled) {
+            $this->log('Push notifications are disabled globally');
             return ['status' => 'Push notifications are disabled'];
         }
 
         // Check test mode - only send to test user
         if ($config->PushTestMode) {
+            $this->log('Test mode is enabled');
             $testMember = $config->getTestMember();
             if ($testMember) {
+                $this->log('Sending to test member only', ['member_id' => $testMember->ID, 'email' => $testMember->Email]);
                 return $this->sendToMember($testMember);
             }
+            $this->log('Test mode enabled but no test user configured');
             return ['status' => 'Test mode enabled but no test user configured'];
         }
 
         $subscribers = Subscriber::get();
+        $this->log('Sending to all subscribers', ['count' => $subscribers->count()]);
         return $this->sendToSubscribers($subscribers);
     }
 
@@ -245,17 +274,27 @@ class PushNotificationService
      */
     public function sendToSubscribers($subscribers): array
     {
-        if ($subscribers->count() === 0) {
+        $count = $subscribers->count();
+        $this->log('Starting push notification send', [
+            'subscriber_count' => $count,
+            'title' => $this->title,
+            'body' => $this->body
+        ]);
+
+        if ($count === 0) {
+            $this->log('No subscribers found');
             return ['status' => 'No subscribers found'];
         }
 
         $config = SiteConfig::current_site_config();
 
         if (!$config->VapidPublicKey || !$config->VapidPrivateKey) {
+            $this->log('VAPID keys not configured');
             return ['error' => 'VAPID keys not configured. Please generate keys in Settings > Manifest.'];
         }
 
         $vapidSubject = $config->VapidSubject ?: 'mailto:admin@example.com';
+        $this->log('Using VAPID subject: ' . $vapidSubject);
 
         $webPush = new WebPushService(
             $config->VapidPublicKey,
@@ -264,9 +303,19 @@ class PushNotificationService
         );
 
         $payload = $this->buildPayload($config);
+        $this->log('Built payload', ['payload' => $payload]);
+
         $response = [];
+        $successCount = 0;
+        $failCount = 0;
 
         foreach ($subscribers as $subscriber) {
+            $this->log('Sending to subscriber', [
+                'id' => $subscriber->ID,
+                'member_id' => $subscriber->MemberID,
+                'endpoint' => substr($subscriber->endpoint, 0, 50) . '...'
+            ]);
+
             $subscription = [
                 'endpoint' => $subscriber->endpoint,
                 'publicKey' => $subscriber->publicKey,
@@ -277,15 +326,23 @@ class PushNotificationService
 
             if ($result['success']) {
                 $response[$subscriber->endpoint] = 'Delivered';
+                $successCount++;
             } else {
                 if ($result['expired']) {
                     $subscriber->delete();
                     $response[$subscriber->endpoint] = 'Subscription expired - removed';
+                    $this->log('Removed expired subscription', ['id' => $subscriber->ID]);
                 } else {
                     $response[$subscriber->endpoint] = 'Failed: ' . $result['message'];
                 }
+                $failCount++;
             }
         }
+
+        $this->log('Push notification send complete', [
+            'success' => $successCount,
+            'failed' => $failCount
+        ]);
 
         return $response;
     }
