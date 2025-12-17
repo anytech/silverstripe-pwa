@@ -62,11 +62,21 @@ function saveSubscription(subscription) {
         method: 'POST',
         body: JSON.stringify({
             endpoint: subscription.endpoint,
-            publicKey: key ? btoa(String.fromCharCode.apply(null, new Uint8Array(key))) : null,
-            authToken: token ? btoa(String.fromCharCode.apply(null, new Uint8Array(token))) : null,
+            publicKey: key ? arrayBufferToBase64Url(key) : null,
+            authToken: token ? arrayBufferToBase64Url(token) : null,
             contentEncoding,
         }),
     }).then(() => subscription);
+}
+
+// Convert ArrayBuffer to Base64URL string
+function arrayBufferToBase64Url(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 // Base64 encryption
