@@ -225,17 +225,22 @@ class WebPushService
         // Generate salt
         $salt = random_bytes(16);
 
-        // Derive encryption key using HKDF
-        $ikm = $this->hkdf(
-            $userAuthTokenData,
-            $sharedSecret,
-            "WebPush: info\x00" . $userPublicKeyData . $localPublicKey,
-            32
-        );
+        // Derive IKM per RFC 8291: HKDF-Extract(auth_secret, ecdh_secret)
+        // Then HKDF-Expand with info = "WebPush: info" || 0x00 || ua_public || as_public
+        $authInfo = "WebPush: info\x00" . $userPublicKeyData . $localPublicKey;
+        $ikm = $this->hkdfDerive($userAuthTokenData, $sharedSecret, $authInfo, 32);
 
+        // Derive CEK and nonce using salt as the key
+        // PRK = HKDF-Extract(salt, IKM)
         $prk = hash_hmac('sha256', $ikm, $salt, true);
-        $cek = $this->hkdf($prk, '', "Content-Encoding: aes128gcm\x00", 16);
-        $nonce = $this->hkdf($prk, '', "Content-Encoding: nonce\x00", 12);
+
+        // CEK = HKDF-Expand(PRK, "Content-Encoding: aes128gcm" || 0x00, 16)
+        $cekInfo = "Content-Encoding: aes128gcm\x00";
+        $cek = substr(hash_hmac('sha256', $cekInfo . chr(1), $prk, true), 0, 16);
+
+        // Nonce = HKDF-Expand(PRK, "Content-Encoding: nonce" || 0x00, 12)
+        $nonceInfo = "Content-Encoding: nonce\x00";
+        $nonce = substr(hash_hmac('sha256', $nonceInfo . chr(1), $prk, true), 0, 12);
 
         // Pad the payload (minimum 1 byte padding with 0x02 delimiter)
         $paddedPayload = $payload . "\x02";
@@ -325,15 +330,16 @@ class WebPushService
     }
 
     /**
-     * HKDF extract and expand
+     * HKDF for Web Push IKM derivation (RFC 8291)
+     * Extract: PRK = HMAC-SHA256(salt, IKM)
+     * Expand: output = HMAC-SHA256(PRK, info || 0x01)
      */
-    private function hkdf(string $ikm, string $salt, string $info, int $length): string
+    private function hkdfDerive(string $salt, string $ikm, string $info, int $length): string
     {
-        if (empty($salt)) {
-            $salt = str_repeat("\x00", 32);
-        }
-
+        // Extract
         $prk = hash_hmac('sha256', $ikm, $salt, true);
+
+        // Expand
         $output = '';
         $counter = 1;
         $previous = '';
