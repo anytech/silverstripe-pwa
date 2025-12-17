@@ -76,7 +76,7 @@ function arrayBufferToBase64Url(buffer) {
     for (let i = 0; i < bytes.byteLength; i++) {
         binary += String.fromCharCode(bytes[i]);
     }
-    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return btoa(binary).split('+').join('-').split('/').join('_').split('=').join('');
 }
 
 // Base64 encryption
