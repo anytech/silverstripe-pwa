@@ -5,9 +5,9 @@ const debug = <% if $DebugMode %>true<% else %>false<% end_if %>;
 const baseURL = "{$BaseUrl}";
 
 // Console.log proxy for quick enabling/disabling
-function log(msg) {
+function log(...args) {
     if (debug) {
-        console.log(msg);
+        console.log('[PWA]', ...args);
     }
 }
 
@@ -51,10 +51,10 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
                 })
         })
         .catch(function (error) {
-            console.error('Service Worker Error', error);
+            if (debug) console.error('[PWA] Service Worker Error', error);
         });
 } else {
-    console.warn('Push messaging is not supported');
+    if (debug) console.warn('[PWA] Push messaging is not supported');
 }
 
 // Subscribe to push notifications
