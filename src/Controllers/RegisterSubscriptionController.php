@@ -5,8 +5,9 @@ namespace SilverStripePWA\Controllers;
 use SilverStripePWA\Models\Subscriber;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Security\Security;
 
-class RegisterSubscriptionController extends Controller 
+class RegisterSubscriptionController extends Controller
 {
     /**
      * @var array
@@ -29,12 +30,29 @@ class RegisterSubscriptionController extends Controller
             case 'POST':
                 $subscription = json_decode($request->getBody(), true);
 
+                // Check if subscription already exists
+                $existing = Subscriber::get()->filter('endpoint', $subscription['endpoint'])->first();
+                if ($existing) {
+                    // Update member link if user is now logged in
+                    $member = Security::getCurrentUser();
+                    if ($member && !$existing->MemberID) {
+                        $existing->MemberID = $member->ID;
+                        $existing->write();
+                    }
+                    echo "Already subscribed";
+                    break;
+                }
+
                 $subscriber = new Subscriber();
-                
                 $subscriber->endpoint = $subscription['endpoint'];
                 $subscriber->publicKey = $subscription['publicKey'];
                 $subscriber->authToken = $subscription['authToken'];
                 $subscriber->contentEncoding = $subscription['contentEncoding'];
+
+                // Link to current member if logged in
+                if ($member = Security::getCurrentUser()) {
+                    $subscriber->MemberID = $member->ID;
+                }
 
                 $subscriber->write();
 

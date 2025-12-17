@@ -79,6 +79,10 @@ function saveSubscription(subscription) {
 
     return fetch(baseURL + "RegisterSubscription", {
         method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
             endpoint: subscription.endpoint,
             publicKey: key ? arrayBufferToBase64Url(key) : null,
