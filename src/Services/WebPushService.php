@@ -2,8 +2,6 @@
 
 namespace SilverStripePWA\Services;
 
-use Psr\Log\LoggerInterface;
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\SiteConfig\SiteConfig;
 
 /**
@@ -30,6 +28,7 @@ class WebPushService
 
     /**
      * Log debug message if debug mode is enabled
+     * Writes directly to pwa-debug.log in project root
      */
     private function log(string $message, array $context = []): void
     {
@@ -37,8 +36,12 @@ class WebPushService
             return;
         }
 
-        $logger = Injector::inst()->get(LoggerInterface::class);
-        $logger->debug('[PWA WebPush] ' . $message, $context);
+        $logFile = BASE_PATH . '/pwa-debug.log';
+        $timestamp = date('Y-m-d H:i:s');
+        $contextStr = !empty($context) ? ' ' . json_encode($context) : '';
+        $logLine = "[$timestamp] [WebPush] $message$contextStr\n";
+
+        file_put_contents($logFile, $logLine, FILE_APPEND | LOCK_EX);
     }
 
     /**
