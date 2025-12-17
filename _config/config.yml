@@ -11,6 +11,7 @@ SilverStripe\Control\Director:
     'push': 'SilverStripePWA\Controllers\SendPushNotificationController'
     'RegisterSubscription': 'SilverStripePWA\Controllers\RegisterSubscriptionController'
     'pwa-generate-vapid-keys': 'SilverStripePWA\Controllers\GenerateVapidKeysController'
+    'pwa-send-test-push': 'SilverStripePWA\Controllers\SendTestPushController'
 
 SilverStripe\SiteConfig\SiteConfig:
     extensions:

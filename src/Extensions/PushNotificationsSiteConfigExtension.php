@@ -13,7 +13,9 @@ use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Assets\Image;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TextareaField;
+use SilverStripe\Forms\FormAction;
 use SilverStripe\Security\Member;
+use SilverStripePWA\Services\PushNotificationService;
 
 class PushNotificationsSiteConfigExtension extends DataExtension
 {
@@ -181,6 +183,18 @@ class PushNotificationsSiteConfigExtension extends DataExtension
 
         $fields->addFieldToTab('Root.PushNotifications', TextField::create('PushAction2Url', 'Action 2 URL')
             ->setDescription('URL to open when action 2 is clicked (leave empty to just dismiss)'));
+
+        // Send Test Push button
+        $fields->addFieldToTab('Root.PushNotifications', HeaderField::create('PushSendTestHeader', 'Send Test Notification'));
+
+        $fields->addFieldToTab('Root.PushNotifications', LiteralField::create('PushSendTestInfo',
+            '<p class="message info">Send a test notification using the default title and message configured above. ' .
+            'If test mode is enabled, only the test user will receive it.</p>'));
+
+        $fields->addFieldToTab('Root.PushNotifications', LiteralField::create('SendTestPushButton',
+            '<a href="/pwa-send-test-push" class="btn btn-primary font-icon-rocket" target="_blank" ' .
+            'onclick="window.open(this.href, \'_blank\', \'width=500,height=300\'); return false;">' .
+            'Send Test Push Notification</a>'));
     }
 
     /**

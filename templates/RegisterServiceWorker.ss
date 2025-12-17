@@ -26,6 +26,8 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
 
                     if (isSubscribed) {
                         log('User is already subscribed');
+                        // Always sync with server to update member link if logged in
+                        saveSubscription(subscription);
                     } else {
                         // Check current permission state
                         if (Notification.permission === 'denied') {
