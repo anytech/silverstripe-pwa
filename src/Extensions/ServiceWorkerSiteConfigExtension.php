@@ -19,6 +19,7 @@ class ServiceWorkerSiteConfigExtension extends Extension
         'ServiceWorkerEnabled' => 'Boolean',
         'OfflineModeEnabled' => 'Boolean',
         'PushNotificationsEnabled' => 'Boolean',
+        'AutoInjectPwaAssets' => 'Boolean',
 
         // Cache settings
         'CacheStrategy' => 'Varchar(50)',
@@ -36,6 +37,7 @@ class ServiceWorkerSiteConfigExtension extends Extension
         'ServiceWorkerEnabled' => true,
         'OfflineModeEnabled' => true,
         'PushNotificationsEnabled' => true,
+        'AutoInjectPwaAssets' => true,
         'CacheStrategy' => 'network-first',
         'CacheVersion' => 'v1',
         'CacheMaxAge' => 86400
@@ -67,6 +69,9 @@ class ServiceWorkerSiteConfigExtension extends Extension
 
         $fields->addFieldToTab('Root.ServiceWorker', CheckboxField::create('PushNotificationsEnabled', 'Enable Push Notifications')
             ->setDescription('Allow push notification subscriptions'));
+
+        $fields->addFieldToTab('Root.ServiceWorker', CheckboxField::create('AutoInjectPwaAssets', 'Auto-inject PWA Assets')
+            ->setDescription('Automatically inject the manifest link and service-worker registration script into every page. Disable if your theme is wiring these manually.'));
 
         // Cache Settings
         $fields->addFieldToTab('Root.ServiceWorker', HeaderField::create('SWCacheHeader', 'Cache Settings'));

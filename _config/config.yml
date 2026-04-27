@@ -21,6 +21,10 @@ SilverStripe\SiteConfig\SiteConfig:
         - SilverStripePWA\Extensions\ServiceWorkerSiteConfigExtension
         - SilverStripePWA\Extensions\OfflinePageSiteConfigExtension
 
+SilverStripe\CMS\Controllers\ContentController:
+    extensions:
+        - SilverStripePWA\Extensions\PwaContentControllerExtension
+
 # Add the push-extension to the page of your choosing
 #
 # Example:
