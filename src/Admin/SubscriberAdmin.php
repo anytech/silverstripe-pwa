@@ -3,39 +3,43 @@
 namespace SilverStripePWA\Admin;
 
 use SilverStripe\Admin\ModelAdmin;
+use SilverStripePWA\Models\PushAnnouncement;
 use SilverStripePWA\Models\Subscriber;
 
 class SubscriberAdmin extends ModelAdmin
 {
     private static $managed_models = [
-        Subscriber::class
+        PushAnnouncement::class => ['title' => 'Announcements'],
+        Subscriber::class => ['title' => 'Subscribers'],
     ];
 
-    private static $url_segment = 'push-subscribers';
+    private static $url_segment = 'push';
 
-    private static $menu_title = 'Push Subscribers';
+    private static $menu_title = 'Push Notifications';
 
-    private static $menu_icon_class = 'font-icon-attention';
+    private static $menu_icon_class = 'font-icon-mobile';
 
-    public function getList()
-    {
+    private static $menu_priority = 20;
+
+    public function getList() {
         $list = parent::getList();
-
-        // Default sort by most recent
         return $list->sort('Created', 'DESC');
     }
 
-    public function getExportFields()
-    {
-        return [
-            'ID' => 'ID',
-            'Type' => 'Type',
-            'Platform' => 'Platform',
-            'Member.Email' => 'Member Email',
-            'Member.FirstName' => 'First Name',
-            'Member.Surname' => 'Surname',
-            'endpoint' => 'Endpoint / Token',
-            'Created' => 'Subscribed Date',
-        ];
+    public function getExportFields() {
+        if ($this->modelClass === Subscriber::class) {
+            return [
+                'ID' => 'ID',
+                'Type' => 'Type',
+                'Platform' => 'Platform',
+                'Member.Email' => 'Member Email',
+                'Member.FirstName' => 'First Name',
+                'Member.Surname' => 'Surname',
+                'endpoint' => 'Endpoint / Token',
+                'Created' => 'Subscribed Date',
+            ];
+        }
+
+        return parent::getExportFields();
     }
 }
