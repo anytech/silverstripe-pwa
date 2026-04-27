@@ -2,14 +2,14 @@
 
 namespace SilverStripePWA\Extensions;
 
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\LiteralField;
 
-class OfflinePageSiteConfigExtension extends DataExtension
+class OfflinePageSiteConfigExtension extends Extension
 {
     private static $db = [
         // Offline page content

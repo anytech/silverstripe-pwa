@@ -2,13 +2,13 @@
 
 namespace SilverStripePWA\Extensions;
 
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripePWA\Services\PushNotificationService;
 
-class PushPageExtension extends DataExtension
+class PushPageExtension extends Extension
 {
     private static $db = [
         'SendPushNotification' => 'Boolean',

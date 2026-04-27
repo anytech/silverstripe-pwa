@@ -2,7 +2,7 @@
 
 namespace SilverStripePWA\Extensions;
 
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\Assets\Image;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\AssetAdmin\Forms\UploadField;
@@ -17,7 +17,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripePWA\Services\WebPushService;
 use SilverStripePWA\Models\ManifestShortcut;
 
-class ManifestSiteConfigExtension extends DataExtension
+class ManifestSiteConfigExtension extends Extension
 {
     private static $db = [
         // Core manifest properties

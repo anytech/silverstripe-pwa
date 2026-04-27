@@ -2,7 +2,7 @@
 
 namespace SilverStripePWA\Extensions;
 
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TextareaField;
@@ -11,7 +11,7 @@ use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\LiteralField;
 
-class ServiceWorkerSiteConfigExtension extends DataExtension
+class ServiceWorkerSiteConfigExtension extends Extension
 {
     private static $db = [
         // Master toggles

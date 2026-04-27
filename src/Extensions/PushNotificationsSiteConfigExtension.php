@@ -2,7 +2,7 @@
 
 namespace SilverStripePWA\Extensions;
 
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\DropdownField;
@@ -17,7 +17,7 @@ use SilverStripe\Forms\FormAction;
 use SilverStripe\Security\Member;
 use SilverStripePWA\Services\PushNotificationService;
 
-class PushNotificationsSiteConfigExtension extends DataExtension
+class PushNotificationsSiteConfigExtension extends Extension
 {
     private static $db = [
         // Test Mode
