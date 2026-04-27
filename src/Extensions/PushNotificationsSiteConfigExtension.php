@@ -13,6 +13,7 @@ use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Assets\Image;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TextareaField;
+use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\FormAction;
 use SilverStripe\Security\Member;
 use SilverStripePWA\Services\PushNotificationService;
