@@ -1,23 +1,26 @@
 # SilverStripe PWA Module
 
-A zero-dependency Progressive Web App (PWA) module for SilverStripe 4 and 5. Add installable app capabilities, offline support, and push notifications to your SilverStripe website.
+Progressive Web App and unified push notifications module for SilverStripe 4, 5, and 6. Adds installable app capabilities, offline support, web push **and** native mobile push (Expo / React Native) notifications, all manageable from the CMS.
 
 ## Features
 
-- **Web App Manifest** - Dynamically generated manifest with full CMS configuration
-- **Service Worker** - Offline-first strategy with customizable caching
-- **Push Notifications** - Native PHP Web Push implementation (no external libraries)
-- **VAPID Key Generation** - Generate keys directly from the CMS
-- **Installable** - Make your site installable on mobile and desktop
-- **Modern Standards** - Follows 2025 PWA best practices
-- **Zero Dependencies** - Only requires SilverStripe and PHP extensions
+- **Web App Manifest** — dynamically generated manifest, fully configurable in the CMS
+- **Service Worker** — offline-first strategy with customizable caching
+- **Web Push** — native PHP Web Push (no third-party libs)
+- **Native Mobile Push** — first-class support for Expo Push (React Native apps) alongside web push
+- **Unified Subscriber Model** — one `Subscriber` table for both web and mobile, polymorphic by `Type`
+- **Push Announcements** — CMS-managed `PushAnnouncement` records with one-click "Send" button
+- **VAPID Generation** — generate keys directly from the CMS, no shell required
+- **Auto-inject** — manifest link and service-worker registration injected into every page automatically (with opt-out)
+- **Grouped Settings** — all PWA configuration nested under a single **PWA** tab in Settings
+- **Test Mode** — gate broadcast sends to a single test member while you're tuning copy/UI
 
 ## Requirements
 
 - PHP 8.0+
-- PHP Extensions: `openssl`, `curl`
-- SilverStripe CMS 4.10+ or 5.x
-- HTTPS (required for service workers and push notifications)
+- PHP extensions: `openssl`, `curl`
+- SilverStripe CMS 4.10+, 5.x, or 6.x
+- HTTPS in production (required for service workers and push)
 
 ## Installation
 
@@ -25,154 +28,135 @@ A zero-dependency Progressive Web App (PWA) module for SilverStripe 4 and 5. Add
 composer require anytech/silverstripe-pwa
 ```
 
-After installation, run the database migration:
+That's all. The plugin auto-injects the manifest link and service-worker registration on every page render. The deploy pipeline runs `dev/build` automatically. Visit the CMS, fill in app name/icon, generate VAPID keys, ship it.
+
+## Configuration
+
+All settings live under **Settings → PWA**, with sub-tabs for clarity:
+
+- **Manifest** — app name, icons, theme color, screenshots, app shortcuts
+- **Push Notifications** — VAPID keys, test mode, default content, behaviour
+- **Service Worker** — master toggles, cache strategy, debug mode, auto-inject toggle
+- **Offline Page** — content + styling for the offline fallback
+
+### Master toggles (Settings → PWA → Service Worker)
+
+- `Enable PWA` — master switch; everything depends on this
+- `Enable Service Worker` — caching + offline support
+- `Enable Offline Mode` — fallback page when network fails
+- `Enable Push Notifications` — allow subscriptions
+- `Auto-inject PWA Assets` — automatically inject manifest + SW registration on every page (default ON; disable if your theme is wiring these manually)
+
+### VAPID keys
+
+Settings → PWA → Push Notifications shows a prominent warning if VAPID keys aren't set. Click **Generate VAPID Keys**, save, done. Keys are stored on `SiteConfig` and used by `WebPushService` for signing payloads.
+
+## Web Push
+
+Web subscribers are auto-collected by the included `RegisterServiceWorker.js`. When a visitor grants notification permission, the script POSTs to `/RegisterSubscription`, which creates a `Subscriber` row of `Type='web'` linked to the current member if logged in.
+
+## Native Mobile Push (Expo)
+
+For React Native apps using Expo, the plugin accepts Expo push tokens at `/RegisterMobileSubscription`:
 
 ```bash
-vendor/bin/sake dev/build flush=1
+POST /RegisterMobileSubscription
+Content-Type: application/json
+{
+    "token": "ExponentPushToken[xxxxxxxxxxxx]",
+    "platform": "ios"  // or "android"
+}
 ```
 
-## Quick Start
+Subscribers from this endpoint are stored as `Type='expo'` in the same `Subscriber` table. `PushNotificationService` automatically detects subscriber type and routes to either `WebPushService` (W3C Push API) or `ExpoPushService` (`exp.host/--/api/v2/push/send`) — your sending code stays the same.
 
-### 1. Add PWA Meta Tags
+The endpoint resolves the member from the active session. If your app uses a custom auth scheme (e.g. bearer tokens), implement your own thin endpoint that creates `Subscriber` records directly using the `MemberID` from your auth check.
 
-Add the following to your page template's `<head>` section (typically `Page.ss` or `Header.ss`):
+### Expo App Side
 
-```html
-<meta name="theme-color" content="$SiteConfig.ManifestColor">
-<link rel="manifest" href="{$BaseHref}manifest.json">
-<script src="{$BaseHref}RegisterServiceWorker.js"></script>
+```bash
+npx expo install expo-notifications expo-device
 ```
 
-### 2. Configure in CMS
+```ts
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
-Navigate to **Settings > Manifest** in the SilverStripe CMS to configure:
+async function registerPushToken() {
+    const settings = await Notifications.getPermissionsAsync();
+    if (!settings.granted) {
+        const req = await Notifications.requestPermissionsAsync();
+        if (!req.granted) return;
+    }
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
+    await fetch('https://yoursite.com/RegisterMobileSubscription', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, platform: Platform.OS }),
+    });
+}
+```
 
-#### Core Settings
-- **App Name** - Full name displayed in install prompts
-- **Short Name** - Name shown on home screen (max 12 characters)
-- **Description** - App description for store listings
+## Push Announcements
 
-#### Appearance
-- **Theme Color** - Browser UI color (address bar, status bar)
-- **Background Color** - Splash screen background
-- **Display Mode** - How the app appears (standalone recommended)
-- **Orientation** - Screen orientation preference
+CMS users can compose and send broadcast push notifications without touching code:
 
-#### Icons
-- **App Icon** - Square PNG/SVG, minimum 512x512px
-- **Maskable Icon** - Adaptive icon for Android with safe zone padding
+1. CMS sidebar → **Push Notifications** → **Announcements** → Add
+2. Fill in Title, Message, optional Click URL
+3. Save → click **Send Push Notification**
+4. Status flips to `Sent`, recipient count is recorded
 
-#### Screenshots (Optional)
-- **Wide Screenshot** - Desktop/tablet screenshot (landscape)
-- **Narrow Screenshot** - Mobile screenshot (portrait)
+Sent announcements are read-only for an audit trail. The Subscribers tab in the same admin shows every subscriber (web + mobile) with their type and platform.
 
-### 3. Generate VAPID Keys (for Push Notifications)
+## Sending from Code
 
-VAPID keys are required for push notifications. You can generate them directly from the CMS:
+Use `PushNotificationService` to dispatch from anywhere — it fans out across web AND native subscribers automatically:
 
-1. Go to **Settings > Manifest**
-2. Scroll to **Push Notification Settings**
-3. Click **Generate VAPID Keys**
-4. Click **Save**
+```php
+use SilverStripePWA\Services\PushNotificationService;
 
-That's it! No command line or external tools needed.
+// Broadcast to all subscribers (web + mobile)
+PushNotificationService::notify('New Update', 'Check out the latest features!');
 
-### 4. Configure VAPID Subject
+// Specific member — covers all their devices/browsers
+$member = Member::get()->byID(123);
+PushNotificationService::notifyMember($member, 'Hello!', 'You have a new message');
 
-In **Settings > Manifest**, set your **VAPID Subject** to a contact email (e.g., `mailto:admin@yoursite.com`).
+// Multiple members
+$members = Member::get()->filter('Groups.Code', 'staff');
+PushNotificationService::notifyMembers($members, 'Team Update', 'New task assigned');
 
-## Push Notifications
+// Fluent API for full control
+PushNotificationService::create()
+    ->setTitle('Order Shipped')
+    ->setBody('Your order #1234 has been shipped!')
+    ->setUrl('/account/orders/1234')
+    ->setTag('order-1234')
+    ->setData(['orderId' => 1234])
+    ->sendToMember($member);
+```
 
-### Enabling Push on Pages
+### Page-publish trigger
 
-To allow push notifications when publishing specific page types, add the extension in your `app/_config/config.yml`:
+Add `PushPageExtension` to any page type. Editors get a "Send Push Notification" checkbox; ticking it before publishing fans out a notification to all subscribers.
 
 ```yaml
-App\Models\BlogPost:
-  extensions:
-    - SilverStripePWA\Extensions\PushPageExtension
-
+# app/_config/config.yml
 Page:
   extensions:
     - SilverStripePWA\Extensions\PushPageExtension
 ```
 
-When editing a page with this extension, you'll see a "Send Push Notification" checkbox. Checking this before publishing will send a notification to all subscribers.
+## Test Mode
 
-### Sending Push Notifications from Code
+Settings → PWA → Push Notifications → **Enable Test Mode** restricts broadcasts to a single configured test member. Useful while iterating on copy/UI without spamming subscribers.
 
-Use `PushNotificationService` to send notifications from anywhere in your application:
-
-```php
-use SilverStripePWA\Services\PushNotificationService;
-
-// Simple: Send to all subscribers
-PushNotificationService::notify('New Update', 'Check out the latest features!');
-
-// Send to a specific member
-$member = Member::get()->byID(123);
-PushNotificationService::notifyMember($member, 'Hello!', 'You have a new message');
-
-// Send to multiple members
-$members = Member::get()->filter('GroupID', 5);
-PushNotificationService::notifyMembers($members, 'Team Update', 'New task assigned');
-
-// Full control with fluent API
-PushNotificationService::create()
-    ->setTitle('Order Shipped')
-    ->setBody('Your order #1234 has been shipped!')
-    ->setUrl('/account/orders/1234')
-    ->setIcon('/assets/icons/shipping.png')
-    ->setTag('order-1234')  // Groups/replaces notifications with same tag
-    ->setData(['orderId' => 1234])
-    ->sendToMember($member);
-```
-
-### Member-Targeted Notifications
-
-Subscribers are automatically linked to logged-in members. This enables targeted notifications:
-
-```php
-// When a user receives a message
-public function onMessageReceived(Message $message)
-{
-    PushNotificationService::notifyMember(
-        $message->Recipient(),
-        'New Message',
-        "From: {$message->Sender()->Name}",
-        $message->Link()
-    );
-}
-
-// When sending an email, also send a push
-public function sendOrderConfirmation(Order $order)
-{
-    // Send email
-    $email = Email::create()->to($order->Customer()->Email);
-    $email->send();
-
-    // Also send push notification
-    PushNotificationService::notifyMember(
-        $order->Customer(),
-        'Order Confirmed',
-        "Order #{$order->ID} has been confirmed",
-        $order->Link()
-    );
-}
-```
-
-### Push Notification Settings
-
-Configure push notification defaults in **Settings > PushNotifications**:
-- **Message** - Default notification body text
-- **TTL** - Time to live in seconds
-- **Vibration Pattern** - Device vibration pattern
-- **Icon** - Notification icon (512x512px)
-- **Badge** - Monochrome badge icon (128x128px)
+The "Send Test Push" button in Settings always targets the test user — independent of whether test mode is enabled.
 
 ## API Endpoints
-
-The module exposes the following endpoints:
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -180,85 +164,59 @@ The module exposes the following endpoints:
 | `/service-worker.js` | GET | Service worker script |
 | `/RegisterServiceWorker.js` | GET | Service worker registration script |
 | `/offline.html` | GET | Offline fallback page |
-| `/RegisterSubscription` | POST | Register push subscription |
-| `/push` | POST | Send push notification (internal) |
+| `/RegisterSubscription` | POST | Register web push subscription |
+| `/RegisterMobileSubscription` | POST | Register Expo mobile push token |
+| `/pwa-generate-vapid-keys` | GET | Generate VAPID keys (admin only) |
+| `/pwa-send-test-push` | GET | Send test push to test user (admin only) |
 
-## Manifest Properties
+## Browser & Platform Support
 
-The generated manifest includes modern PWA properties:
+| Surface | Status |
+|---|---|
+| Chrome / Edge | Full web push, install prompt, badging |
+| Firefox | Full web push |
+| Safari (desktop / iOS 16.4+) | Web push only when "Add to Home Screen" |
+| Android (native via Expo) | Full Expo push |
+| iOS (native via Expo) | Full Expo push (requires Apple Developer account) |
 
-```json
-{
-  "name": "Your App Name",
-  "short_name": "App",
-  "description": "Your app description",
-  "start_url": "/",
-  "id": "/",
-  "display": "standalone",
-  "orientation": "any",
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "lang": "en",
-  "categories": ["business"],
-  "icons": [...],
-  "screenshots": [...]
-}
+## Subscriber Schema
+
+```
+Subscriber
+├── Type           Enum('web','expo')
+├── Platform       Enum('ios','android', null)   // native only
+├── endpoint       Text                           // URL for web, token for expo
+├── publicKey      Text                           // web only
+├── authToken      Text                           // web only
+├── contentEncoding Text                          // web only
+└── MemberID       Int                            // optional, links to Member
 ```
 
-## Service Worker
-
-The service worker implements:
-
-- **Network-first strategy** - Always tries network, falls back to cache
-- **Offline page** - Custom offline page when network unavailable
-- **Push notifications** - Receives and displays push messages
-- **Cache management** - Automatic cleanup of old caches
-- **Message handling** - Skip waiting and cache clearing via postMessage
-
-## Browser Support
-
-| Feature | Chrome | Firefox | Safari | Edge |
-|---------|--------|---------|--------|------|
-| Manifest | Yes | Yes | Yes | Yes |
-| Service Worker | Yes | Yes | Yes | Yes |
-| Push Notifications | Yes | Yes | Limited | Yes |
-| Install Prompt | Yes | No | Limited | Yes |
+The same `PushNotificationService` call routes a notification to the right pipe based on `Type`. Sites can install the plugin and use it for web only, mobile only, or both — the routing is transparent.
 
 ## Troubleshooting
 
-### Service Worker Not Registering
-- Ensure your site is served over HTTPS
-- Check browser console for errors
-- Verify `/service-worker.js` returns valid JavaScript
+### Auto-inject is enabled but the script tag isn't on the page
+Confirm both `Enable PWA` and `Auto-inject PWA Assets` are ticked in Settings → PWA → Service Worker. Defaults only apply on a fresh `SiteConfig` row — sites upgrading from earlier plugin versions need to tick them once after install.
 
-### Push Notifications Not Working
-- Generate VAPID keys in Settings > Manifest
-- Check that VAPID subject is configured (must be a mailto: URL)
-- Ensure user has granted notification permissions
-- Check browser support for Web Push
+### "VAPID keys not configured" warning won't go away
+Click **Generate VAPID Keys** in Settings → PWA → Push Notifications. Don't paste keys generated elsewhere unless you know the key format matches what `WebPushService` expects.
 
-### Manifest Not Loading
-- Verify `/manifest.json` returns valid JSON
-- Check for CORS issues if using CDN
-- Ensure app icon is uploaded and published
+### Mobile token registers but no notifications arrive
+- For Expo: confirm the token is `ExponentPushToken[…]` not a raw FCM/APNS token
+- iOS native push needs a paid Apple Developer account configured with EAS — Expo Go won't deliver
+- Check the `pwa-debug.log` (project root) when **Service Worker Debug Mode** is on — `ExpoPushService` writes its HTTP responses there
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This module is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+### Service worker won't unregister
+DevTools → Application → Service Workers can fail. Try the console nuke instead:
+```js
+navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+```
 
 ## Author
 
-**Kayne Middleton**
-[Anytech](https://anytech.ca)
-kayne@anytech.ca
+**Kayne Middleton** — [Anytech](https://anytech.ca) — kayne@anytech.ca
 
-## Links
+## License
 
-- [GitHub Repository](https://github.com/anytech/silverstripe-pwa)
-- [Issue Tracker](https://github.com/anytech/silverstripe-pwa/issues)
-- [PWA Documentation (MDN)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
-- [Web App Manifest Reference](https://developer.mozilla.org/en-US/docs/Web/Manifest)
+MIT — see [LICENSE](LICENSE).

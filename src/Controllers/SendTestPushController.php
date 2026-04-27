@@ -23,15 +23,20 @@ class SendTestPushController extends Controller
         }
 
         $config = SiteConfig::current_site_config();
+        $testMember = $config->getTestMember();
 
-        $title = $config->PushDefaultTitle ?: 'Test Notification';
-        $message = $config->Message ?: 'This is a test push notification';
+        if (!$testMember) {
+            $result = ['error' => 'No test user configured. Set one in Settings → PWA → Push Notifications.'];
+        } else {
+            $title = $config->PushDefaultTitle ?: 'Test Notification';
+            $message = $config->Message ?: 'This is a test push notification';
 
-        $result = PushNotificationService::create()
-            ->setTitle($title)
-            ->setBody($message)
-            ->setUrl('/')
-            ->sendToAll();
+            $result = PushNotificationService::create()
+                ->setTitle($title)
+                ->setBody($message)
+                ->setUrl('/')
+                ->sendToMember($testMember);
+        }
 
         $html = '<html><head><title>Test Push Result</title>';
         $html .= '<style>body { font-family: sans-serif; padding: 20px; } ';

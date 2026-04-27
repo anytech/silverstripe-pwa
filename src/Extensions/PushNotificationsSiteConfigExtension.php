@@ -236,7 +236,7 @@ class PushNotificationsSiteConfigExtension extends Extension
 
         $fields->addFieldToTab('Root.PWA.PushNotifications', LiteralField::create('PushSendTestInfo',
             '<p class="message info">Send a test notification using the default title and message configured above. ' .
-            'If test mode is enabled, only the test user will receive it.</p>'));
+            'Always delivered to the configured test user only — never to other subscribers.</p>'));
 
         $fields->addFieldToTab('Root.PWA.PushNotifications', LiteralField::create('SendTestPushButton',
             '<a href="/pwa-send-test-push" class="btn btn-primary font-icon-rocket" target="_blank" ' .
