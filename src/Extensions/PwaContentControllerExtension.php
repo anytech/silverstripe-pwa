@@ -9,6 +9,11 @@ use SilverStripe\View\Requirements;
 class PwaContentControllerExtension extends Extension
 {
     public function onAfterInit() {
+        $request = $this->owner->getRequest();
+        if ($request && str_starts_with(ltrim($request->getURL(), '/'), 'admin')) {
+            return;
+        }
+
         $config = SiteConfig::current_site_config();
 
         if (!$config->PWAEnabled) {
