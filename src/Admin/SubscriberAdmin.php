@@ -19,8 +19,6 @@ class SubscriberAdmin extends ModelAdmin
 
     private static $menu_icon_class = 'font-icon-mobile';
 
-    private static $menu_priority = 20;
-
     public function getList() {
         $list = parent::getList();
         return $list->sort('Created', 'DESC');
