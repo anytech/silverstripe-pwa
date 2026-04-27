@@ -52,7 +52,10 @@ class RegisterServiceWorkerController extends Controller {
      * @return bool
      */
     public function DebugMode() {
-        if(Director::isDev()){
+        if (Director::isDev()) {
+            return true;
+        }
+        if (SiteConfig::current_site_config()->ServiceWorkerDebug) {
             return true;
         }
         return $this->config()->get('debug_mode');
