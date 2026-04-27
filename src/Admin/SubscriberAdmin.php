@@ -29,11 +29,13 @@ class SubscriberAdmin extends ModelAdmin
     {
         return [
             'ID' => 'ID',
+            'Type' => 'Type',
+            'Platform' => 'Platform',
             'Member.Email' => 'Member Email',
             'Member.FirstName' => 'First Name',
             'Member.Surname' => 'Surname',
-            'endpoint' => 'Endpoint',
-            'Created' => 'Subscribed Date'
+            'endpoint' => 'Endpoint / Token',
+            'Created' => 'Subscribed Date',
         ];
     }
 }
