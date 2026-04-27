@@ -53,53 +53,53 @@ class ServiceWorkerSiteConfigExtension extends Extension
     public function updateCMSFields(FieldList $fields)
     {
         // Master Controls
-        $fields->addFieldToTab('Root.ServiceWorker', HeaderField::create('SWMasterHeader', 'PWA Controls'));
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', HeaderField::create('SWMasterHeader', 'PWA Controls'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', LiteralField::create('SWMasterInfo',
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', LiteralField::create('SWMasterInfo',
             '<p class="message info">Use these toggles to enable or disable PWA features. Disabling the Service Worker will disable all offline and caching functionality.</p>'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', CheckboxField::create('PWAEnabled', 'Enable PWA')
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', CheckboxField::create('PWAEnabled', 'Enable PWA')
             ->setDescription('Master switch - disable to turn off all PWA functionality'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', CheckboxField::create('ServiceWorkerEnabled', 'Enable Service Worker')
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', CheckboxField::create('ServiceWorkerEnabled', 'Enable Service Worker')
             ->setDescription('Enable/disable the service worker (caching and offline support)'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', CheckboxField::create('OfflineModeEnabled', 'Enable Offline Mode')
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', CheckboxField::create('OfflineModeEnabled', 'Enable Offline Mode')
             ->setDescription('Show offline page when network is unavailable'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', CheckboxField::create('PushNotificationsEnabled', 'Enable Push Notifications')
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', CheckboxField::create('PushNotificationsEnabled', 'Enable Push Notifications')
             ->setDescription('Allow push notification subscriptions'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', CheckboxField::create('AutoInjectPwaAssets', 'Auto-inject PWA Assets')
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', CheckboxField::create('AutoInjectPwaAssets', 'Auto-inject PWA Assets')
             ->setDescription('Automatically inject the manifest link and service-worker registration script into every page. Disable if your theme is wiring these manually.'));
 
         // Cache Settings
-        $fields->addFieldToTab('Root.ServiceWorker', HeaderField::create('SWCacheHeader', 'Cache Settings'));
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', HeaderField::create('SWCacheHeader', 'Cache Settings'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', DropdownField::create('CacheStrategy', 'Cache Strategy', self::$cache_strategies)
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', DropdownField::create('CacheStrategy', 'Cache Strategy', self::$cache_strategies)
             ->setDescription('How the service worker handles requests'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', TextField::create('CacheVersion', 'Cache Version')
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', TextField::create('CacheVersion', 'Cache Version')
             ->setDescription('Change this to force browsers to clear their cache (e.g., v1, v2, v3)'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', TextField::create('CacheMaxAge', 'Cache Max Age (seconds)')
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', TextField::create('CacheMaxAge', 'Cache Max Age (seconds)')
             ->setDescription('How long to keep items in cache. Default: 86400 (24 hours)'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', TextareaField::create('PrecacheUrls', 'Pre-cache URLs')
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', TextareaField::create('PrecacheUrls', 'Pre-cache URLs')
             ->setRows(5)
             ->setDescription('URLs to cache when service worker installs (one per line). These will be available offline immediately.'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', TextareaField::create('ExcludeUrlPatterns', 'Exclude URL Patterns')
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', TextareaField::create('ExcludeUrlPatterns', 'Exclude URL Patterns')
             ->setRows(5)
             ->setDescription('URL patterns to never cache (one per line). Supports wildcards: /admin/*, /api/*, *.json'));
 
         // Debug
-        $fields->addFieldToTab('Root.ServiceWorker', HeaderField::create('SWDebugHeader', 'Developer Options'));
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', HeaderField::create('SWDebugHeader', 'Developer Options'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', CheckboxField::create('ServiceWorkerDebug', 'Enable Debug Mode')
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', CheckboxField::create('ServiceWorkerDebug', 'Enable Debug Mode')
             ->setDescription('Log service worker events to browser console'));
 
-        $fields->addFieldToTab('Root.ServiceWorker', LiteralField::create('SWDebugInfo',
+        $fields->addFieldToTab('Root.PWA.ServiceWorker', LiteralField::create('SWDebugInfo',
             '<p class="message warning">Debug mode should be disabled in production. It may expose internal information in the browser console.</p>'));
     }
 

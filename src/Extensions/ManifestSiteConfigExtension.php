@@ -136,89 +136,89 @@ class ManifestSiteConfigExtension extends Extension
     public function updateCMSFields(FieldList $fields)
     {
         // Core Settings
-        $fields->addFieldToTab('Root.Manifest', HeaderField::create('ManifestCoreHeader', 'Core Settings'));
+        $fields->addFieldToTab('Root.PWA.Manifest', HeaderField::create('ManifestCoreHeader', 'Core Settings'));
 
-        $fields->addFieldToTab('Root.Manifest', TextField::create('ManifestName', 'App Name')
+        $fields->addFieldToTab('Root.PWA.Manifest', TextField::create('ManifestName', 'App Name')
             ->setDescription('Full name of your application (displayed in install prompts and app listings)'));
 
-        $fields->addFieldToTab('Root.Manifest', TextField::create('ManifestShortName', 'Short Name')
+        $fields->addFieldToTab('Root.PWA.Manifest', TextField::create('ManifestShortName', 'Short Name')
             ->setDescription('Short name displayed on home screen (max 12 characters recommended)'));
 
-        $fields->addFieldToTab('Root.Manifest', TextareaField::create('ManifestDescription', 'Description')
+        $fields->addFieldToTab('Root.PWA.Manifest', TextareaField::create('ManifestDescription', 'Description')
             ->setRows(3)
             ->setDescription('Description of your app for app stores and install prompts'));
 
         // Appearance
-        $fields->addFieldToTab('Root.Manifest', HeaderField::create('ManifestAppearanceHeader', 'Appearance'));
+        $fields->addFieldToTab('Root.PWA.Manifest', HeaderField::create('ManifestAppearanceHeader', 'Appearance'));
 
-        $fields->addFieldToTab('Root.Manifest', TextField::create('ManifestColor', 'Theme Color')
+        $fields->addFieldToTab('Root.PWA.Manifest', TextField::create('ManifestColor', 'Theme Color')
             ->setAttribute('type', 'color')
             ->setDescription('Color for browser UI elements (address bar, status bar)'));
 
-        $fields->addFieldToTab('Root.Manifest', TextField::create('ManifestBackgroundColor', 'Background Color')
+        $fields->addFieldToTab('Root.PWA.Manifest', TextField::create('ManifestBackgroundColor', 'Background Color')
             ->setAttribute('type', 'color')
             ->setDescription('Background color for splash screen while app loads'));
 
-        $fields->addFieldToTab('Root.Manifest', DropdownField::create('ManifestDisplay', 'Display Mode', self::$displays)
+        $fields->addFieldToTab('Root.PWA.Manifest', DropdownField::create('ManifestDisplay', 'Display Mode', self::$displays)
             ->setDescription('How the app appears when launched'));
 
-        $fields->addFieldToTab('Root.Manifest', DropdownField::create('ManifestOrientation', 'Orientation', self::$orientations)
+        $fields->addFieldToTab('Root.PWA.Manifest', DropdownField::create('ManifestOrientation', 'Orientation', self::$orientations)
             ->setDescription('Preferred screen orientation'));
 
         // Icons
-        $fields->addFieldToTab('Root.Manifest', HeaderField::create('ManifestIconsHeader', 'Icons'));
+        $fields->addFieldToTab('Root.PWA.Manifest', HeaderField::create('ManifestIconsHeader', 'Icons'));
 
-        $fields->addFieldToTab('Root.Manifest', UploadField::create('ManifestLogo', 'App Icon')
+        $fields->addFieldToTab('Root.PWA.Manifest', UploadField::create('ManifestLogo', 'App Icon')
             ->setFolderName('pwa-assets')
             ->setAllowedExtensions(['png', 'svg'])
             ->setDescription('Square icon, minimum 512x512px (PNG or SVG). Used for home screen, app launcher, etc.'));
 
-        $fields->addFieldToTab('Root.Manifest', UploadField::create('ManifestMaskableIcon', 'Maskable Icon (Optional)')
+        $fields->addFieldToTab('Root.PWA.Manifest', UploadField::create('ManifestMaskableIcon', 'Maskable Icon (Optional)')
             ->setFolderName('pwa-assets')
             ->setAllowedExtensions(['png'])
             ->setDescription('Adaptive icon for Android. Should have safe zone padding (at least 10% on each side). 512x512px PNG.'));
 
         // Screenshots
-        $fields->addFieldToTab('Root.Manifest', HeaderField::create('ManifestScreenshotsHeader', 'Screenshots (Optional)'));
+        $fields->addFieldToTab('Root.PWA.Manifest', HeaderField::create('ManifestScreenshotsHeader', 'Screenshots (Optional)'));
 
-        $fields->addFieldToTab('Root.Manifest', LiteralField::create('ScreenshotInfo',
+        $fields->addFieldToTab('Root.PWA.Manifest', LiteralField::create('ScreenshotInfo',
             '<p class="message info">Screenshots are shown in app store listings and install prompts. Recommended sizes: Wide (1280x720), Narrow (540x720).</p>'));
 
-        $fields->addFieldToTab('Root.Manifest', UploadField::create('ManifestScreenshotWide', 'Wide Screenshot')
+        $fields->addFieldToTab('Root.PWA.Manifest', UploadField::create('ManifestScreenshotWide', 'Wide Screenshot')
             ->setFolderName('pwa-assets')
             ->setAllowedExtensions(['png', 'jpg', 'jpeg', 'webp'])
             ->setDescription('Desktop/tablet screenshot (landscape, e.g., 1280x720)'));
 
-        $fields->addFieldToTab('Root.Manifest', UploadField::create('ManifestScreenshotNarrow', 'Narrow Screenshot')
+        $fields->addFieldToTab('Root.PWA.Manifest', UploadField::create('ManifestScreenshotNarrow', 'Narrow Screenshot')
             ->setFolderName('pwa-assets')
             ->setAllowedExtensions(['png', 'jpg', 'jpeg', 'webp'])
             ->setDescription('Mobile screenshot (portrait, e.g., 540x720)'));
 
         // Advanced Settings
-        $fields->addFieldToTab('Root.Manifest', HeaderField::create('ManifestAdvancedHeader', 'Advanced Settings'));
+        $fields->addFieldToTab('Root.PWA.Manifest', HeaderField::create('ManifestAdvancedHeader', 'Advanced Settings'));
 
-        $fields->addFieldToTab('Root.Manifest', TextField::create('ManifestId', 'App ID (Optional)')
+        $fields->addFieldToTab('Root.PWA.Manifest', TextField::create('ManifestId', 'App ID (Optional)')
             ->setDescription('Unique identifier for your app. Leave blank to auto-generate from start URL.'));
 
-        $fields->addFieldToTab('Root.Manifest', TextField::create('ManifestStartUrl', 'Start URL (Optional)')
+        $fields->addFieldToTab('Root.PWA.Manifest', TextField::create('ManifestStartUrl', 'Start URL (Optional)')
             ->setDescription('URL opened when app is launched. Leave blank for site root.'));
 
-        $fields->addFieldToTab('Root.Manifest', TextField::create('ManifestScope', 'Scope (Optional)')
+        $fields->addFieldToTab('Root.PWA.Manifest', TextField::create('ManifestScope', 'Scope (Optional)')
             ->setDescription('Navigation scope of the app. Leave blank to use start URL directory.'));
 
-        $fields->addFieldToTab('Root.Manifest', DropdownField::create('ManifestCategories', 'Category', self::$categories)
+        $fields->addFieldToTab('Root.PWA.Manifest', DropdownField::create('ManifestCategories', 'Category', self::$categories)
             ->setDescription('App category for store listings'));
 
-        $fields->addFieldToTab('Root.Manifest', TextField::create('ManifestLang', 'Language Code (Optional)')
+        $fields->addFieldToTab('Root.PWA.Manifest', TextField::create('ManifestLang', 'Language Code (Optional)')
             ->setDescription('Primary language (e.g., "en", "en-US", "fr"). Leave blank to auto-detect.'));
 
-        $fields->addFieldToTab('Root.Manifest', DropdownField::create('ManifestDir', 'Text Direction', self::$text_directions)
+        $fields->addFieldToTab('Root.PWA.Manifest', DropdownField::create('ManifestDir', 'Text Direction', self::$text_directions)
             ->setDescription('Text direction for the app'));
 
         // Shortcuts
-        $fields->addFieldToTab('Root.Manifest', HeaderField::create('ManifestShortcutsHeader', 'App Shortcuts'));
+        $fields->addFieldToTab('Root.PWA.Manifest', HeaderField::create('ManifestShortcutsHeader', 'App Shortcuts'));
 
-        $fields->addFieldToTab('Root.Manifest', LiteralField::create('ShortcutsInfo',
+        $fields->addFieldToTab('Root.PWA.Manifest', LiteralField::create('ShortcutsInfo',
             '<p class="message info">Shortcuts appear when long-pressing the app icon (mobile) or right-clicking on the taskbar (desktop). Maximum 4 shortcuts recommended.</p>'));
 
         if ($this->owner->ID) {
@@ -228,56 +228,11 @@ class ManifestSiteConfigExtension extends Extension
                 $this->owner->ManifestShortcuts(),
                 GridFieldConfig_RecordEditor::create()
             );
-            $fields->addFieldToTab('Root.Manifest', $shortcutsGrid);
+            $fields->addFieldToTab('Root.PWA.Manifest', $shortcutsGrid);
         } else {
-            $fields->addFieldToTab('Root.Manifest', LiteralField::create('ShortcutsSaveFirst',
+            $fields->addFieldToTab('Root.PWA.Manifest', LiteralField::create('ShortcutsSaveFirst',
                 '<p class="message warning">Save the settings first to add shortcuts.</p>'));
         }
 
-        // VAPID Settings
-        $fields->addFieldToTab('Root.Manifest', HeaderField::create('ManifestVapidHeader', 'Push Notification Settings'));
-
-        $fields->addFieldToTab('Root.Manifest', TextField::create('VapidSubject', 'VAPID Subject')
-            ->setDescription('Contact email for push notifications (e.g., mailto:admin@example.com)'));
-
-        // VAPID Keys
-        if ($this->owner->VapidPublicKey && $this->owner->VapidPrivateKey) {
-            $fields->addFieldToTab('Root.Manifest', ReadonlyField::create('VapidPublicKey', 'VAPID Public Key')
-                ->setDescription('This key is used by browsers to verify push notifications. Share this in your service worker registration.'));
-
-            $fields->addFieldToTab('Root.Manifest', ReadonlyField::create('VapidPrivateKey', 'VAPID Private Key')
-                ->setDescription('Keep this secret! Used to sign push notifications.'));
-
-            $fields->addFieldToTab('Root.Manifest', LiteralField::create('VapidKeysGenerated',
-                '<p class="message good">VAPID keys are configured. Push notifications are ready to use.</p>'));
-        } else {
-            $fields->addFieldToTab('Root.Manifest', LiteralField::create('VapidKeysNotGenerated',
-                '<p class="message warning">VAPID keys not configured. Click "Generate VAPID Keys" below, then save.</p>'));
-
-            $fields->addFieldToTab('Root.Manifest', LiteralField::create('GenerateVapidButton',
-                '<p><button type="button" class="btn action btn-primary" onclick="generateVapidKeys()">Generate VAPID Keys</button></p>
-                <script>
-                function generateVapidKeys() {
-                    fetch("/pwa-generate-vapid-keys")
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                document.querySelector(\'input[name="VapidPublicKey"]\').value = data.publicKey;
-                                document.querySelector(\'input[name="VapidPrivateKey"]\').value = data.privateKey;
-                                alert("VAPID keys generated! Click Save to store them.");
-                            } else {
-                                alert("Error: " + data.error);
-                            }
-                        })
-                        .catch(err => alert("Error generating keys: " + err));
-                }
-                </script>'));
-
-            $fields->addFieldToTab('Root.Manifest', TextField::create('VapidPublicKey', 'VAPID Public Key')
-                ->setDescription('Will be auto-generated'));
-
-            $fields->addFieldToTab('Root.Manifest', TextField::create('VapidPrivateKey', 'VAPID Private Key')
-                ->setDescription('Will be auto-generated'));
-        }
     }
 }
