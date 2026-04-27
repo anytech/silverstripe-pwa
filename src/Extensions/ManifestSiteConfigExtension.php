@@ -119,8 +119,6 @@ class ManifestSiteConfigExtension extends Extension
 
     public function onAfterWrite()
     {
-        parent::onAfterWrite();
-
         $images = [
             $this->owner->ManifestLogo(),
             $this->owner->ManifestMaskableIcon(),

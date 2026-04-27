@@ -3,7 +3,6 @@
 namespace SilverStripePWA\Controllers;
 
 use SilverStripe\Control\Controller;
-use SilverStripe\ORM\ArrayList;
 use SilverStripe\Control\HTTPRequest;
 
 use SilverStripePWA\Controllers\PushController;

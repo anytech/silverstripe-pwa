@@ -80,8 +80,6 @@ class PushNotificationsSiteConfigExtension extends Extension
 
     public function onAfterWrite()
     {
-        parent::onAfterWrite();
-
         $icon = $this->owner->icon();
         $badge = $this->owner->badge();
 
