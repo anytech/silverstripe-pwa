@@ -1,6 +1,6 @@
 {
     "name": "anytech/silverstripe-pwa",
-    "description": "Progressive Web App (PWA) module for SilverStripe 4/5 with Web Manifest, Service Worker, and Push Notifications support",
+    "description": "Progressive Web App (PWA) module for SilverStripe 4/5/6 with Web Manifest, Service Worker, Web Push, and Expo (React Native) push notifications.",
     "homepage": "https://github.com/anytech/silverstripe-pwa",
     "type": "silverstripe-vendormodule",
     "keywords": [
@@ -34,8 +34,8 @@
         "php": "^8.0",
         "ext-openssl": "*",
         "ext-curl": "*",
-        "silverstripe/cms": "^4.10 || ^5.0",
-        "silverstripe/framework": "^4.10 || ^5.0",
+        "silverstripe/cms": "^4.10 || ^5.0 || ^6.0",
+        "silverstripe/framework": "^4.10 || ^5.0 || ^6.0",
         "silverstripe/vendor-plugin": "^1.0 || ^2.0"
     },
     "autoload": {

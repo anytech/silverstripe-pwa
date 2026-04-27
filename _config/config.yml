@@ -10,6 +10,7 @@ SilverStripe\Control\Director:
     'offline.html': 'SilverStripePWA\Controllers\OfflinePageController'
     'push': 'SilverStripePWA\Controllers\SendPushNotificationController'
     'RegisterSubscription': 'SilverStripePWA\Controllers\RegisterSubscriptionController'
+    'RegisterMobileSubscription': 'SilverStripePWA\Controllers\RegisterMobileSubscriptionController'
     'pwa-generate-vapid-keys': 'SilverStripePWA\Controllers\GenerateVapidKeysController'
     'pwa-send-test-push': 'SilverStripePWA\Controllers\SendTestPushController'
 

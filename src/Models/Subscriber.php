@@ -13,31 +13,39 @@ class Subscriber extends DataObject
     private static $table_name = "Subscriber";
 
     private static $db = [
+        'Type' => "Enum('web,expo','web')",
+        'Platform' => "Enum('ios,android','')",
         'endpoint' => 'Text',
         'publicKey' => 'Text',
         'authToken' => 'Text',
-        'contentEncoding' => 'Text'
+        'contentEncoding' => 'Text',
     ];
 
     private static $has_one = [
-        'Member' => Member::class
+        'Member' => Member::class,
     ];
 
     private static $summary_fields = [
         'ID' => 'ID',
+        'Type' => 'Type',
+        'Platform' => 'Platform',
         'Member.Email' => 'Member',
-        'EndpointSummary' => 'Endpoint',
-        'Created' => 'Subscribed'
+        'EndpointSummary' => 'Endpoint / Token',
+        'Created' => 'Subscribed',
     ];
 
-    public function getCMSFields()
-    {
+    public function getCMSFields() {
         $fields = FieldList::create(
-            ReadonlyField::create('endpoint', 'Endpoint'),
-            ReadonlyField::create('publicKey', 'Public Key'),
-            ReadonlyField::create('authToken', 'Auth Token'),
-            ReadonlyField::create('contentEncoding', 'Content Encoding')
+            ReadonlyField::create('Type', 'Type'),
+            ReadonlyField::create('Platform', 'Platform'),
+            ReadonlyField::create('endpoint', 'Endpoint / Token')
         );
+
+        if ($this->Type === 'web') {
+            $fields->push(ReadonlyField::create('publicKey', 'Public Key'));
+            $fields->push(ReadonlyField::create('authToken', 'Auth Token'));
+            $fields->push(ReadonlyField::create('contentEncoding', 'Content Encoding'));
+        }
 
         if ($this->Member()->exists()) {
             $fields->push(ReadonlyField::create('MemberEmail', 'Member', $this->Member()->Email));
@@ -46,25 +54,20 @@ class Subscriber extends DataObject
         return $fields;
     }
 
-    /**
-     * Get truncated endpoint for display
-     */
-    public function getEndpointSummary(): string
-    {
+    public function getEndpointSummary(): string {
         if (strlen($this->endpoint) > 50) {
             return substr($this->endpoint, 0, 50) . '...';
         }
         return $this->endpoint;
     }
 
-    /**
-     * Associate current logged-in member when creating subscription
-     */
-    public function onBeforeWrite()
-    {
+    public function onBeforeWrite() {
         parent::onBeforeWrite();
 
-        // Auto-assign current member if not set
+        if (!$this->Type) {
+            $this->Type = 'web';
+        }
+
         if (!$this->MemberID && $member = Security::getCurrentUser()) {
             $this->MemberID = $member->ID;
         }

@@ -5,6 +5,7 @@ namespace SilverStripePWA\Services;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Security\Member;
 use SilverStripePWA\Models\Subscriber;
+use SilverStripePWA\Services\ExpoPushService;
 use SilverStripePWA\Services\WebPushService;
 
 /**
@@ -291,41 +292,59 @@ class PushNotificationService
 
         $config = SiteConfig::current_site_config();
 
-        if (!$config->VapidPublicKey || !$config->VapidPrivateKey) {
-            $this->log('VAPID keys not configured');
-            return ['error' => 'VAPID keys not configured. Please generate keys in Settings > Manifest.'];
-        }
-
-        $vapidSubject = $config->VapidSubject ?: 'mailto:admin@example.com';
-        $this->log('Using VAPID subject: ' . $vapidSubject);
-
-        $webPush = new WebPushService(
-            $config->VapidPublicKey,
-            $config->VapidPrivateKey,
-            $vapidSubject
-        );
-
         $payload = $this->buildPayload($config);
         $this->log('Built payload', ['payload' => $payload]);
+
+        $webPush = null;
+        $expoPush = null;
 
         $response = [];
         $successCount = 0;
         $failCount = 0;
 
         foreach ($subscribers as $subscriber) {
+            $type = $subscriber->Type ?: 'web';
+
             $this->log('Sending to subscriber', [
                 'id' => $subscriber->ID,
+                'type' => $type,
                 'member_id' => $subscriber->MemberID,
-                'endpoint' => substr($subscriber->endpoint, 0, 50) . '...'
+                'endpoint' => substr($subscriber->endpoint, 0, 50) . '...',
             ]);
 
-            $subscription = [
-                'endpoint' => $subscriber->endpoint,
-                'publicKey' => $subscriber->publicKey,
-                'authToken' => $subscriber->authToken
-            ];
-
-            $result = $webPush->send($subscription, $payload, $this->ttl);
+            if ($type === 'expo') {
+                if (!$expoPush) {
+                    $expoPush = new ExpoPushService();
+                }
+                $result = $expoPush->send(
+                    ['endpoint' => $subscriber->endpoint],
+                    $payload,
+                    $this->ttl,
+                );
+            } else {
+                if (!$webPush) {
+                    if (!$config->VapidPublicKey || !$config->VapidPrivateKey) {
+                        $this->log('VAPID keys not configured');
+                        $response[$subscriber->endpoint] = 'VAPID keys not configured';
+                        $failCount++;
+                        continue;
+                    }
+                    $webPush = new WebPushService(
+                        $config->VapidPublicKey,
+                        $config->VapidPrivateKey,
+                        $config->VapidSubject ?: 'mailto:admin@example.com',
+                    );
+                }
+                $result = $webPush->send(
+                    [
+                        'endpoint' => $subscriber->endpoint,
+                        'publicKey' => $subscriber->publicKey,
+                        'authToken' => $subscriber->authToken,
+                    ],
+                    $payload,
+                    $this->ttl,
+                );
+            }
 
             if ($result['success']) {
                 $response[$subscriber->endpoint] = 'Delivered';
