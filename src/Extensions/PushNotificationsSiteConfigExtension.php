@@ -244,21 +244,12 @@ class PushNotificationsSiteConfigExtension extends Extension
             'Send Test Push Notification</a>'));
     }
 
-    /**
-     * Get the test member (if test mode is enabled)
-     */
     public function getTestMember(): ?Member
     {
-        if (!$this->owner->PushTestMode) {
-            return null;
-        }
-
-        // Try by ID first
         if ($this->owner->PushTestMemberID) {
             return Member::get()->byID($this->owner->PushTestMemberID);
         }
 
-        // Fall back to email
         if ($this->owner->PushTestEmail) {
             return Member::get()->filter('Email', $this->owner->PushTestEmail)->first();
         }
