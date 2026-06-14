@@ -97,6 +97,13 @@ class ManifestController extends Controller
             $manifest['shortcuts'] = $shortcuts;
         }
 
+        // Related native apps
+        $related = $this->generateRelatedApplications($config);
+        if (!empty($related)) {
+            $manifest['related_applications'] = $related;
+            $manifest['prefer_related_applications'] = (bool) $config->ManifestPreferRelated;
+        }
+
         // Set response headers
         $this->getResponse()->addHeader('Content-Type', 'application/manifest+json; charset=utf-8');
         $this->getResponse()->addHeader('Cache-Control', 'public, max-age=86400');
@@ -201,5 +208,35 @@ class ManifestController extends Controller
         }
 
         return $shortcuts;
+    }
+
+    /**
+     * Generate related_applications array for the manifest. These are the native
+     * apps the browser matches against for getInstalledRelatedApps() and native
+     * install hints.
+     *
+     * @param SiteConfig $config
+     * @return array
+     */
+    private function generateRelatedApplications(SiteConfig $config): array
+    {
+        $related = [];
+
+        if ($config->ManifestAndroidPackage) {
+            $related[] = [
+                'platform' => 'play',
+                'id' => $config->ManifestAndroidPackage,
+                'url' => 'https://play.google.com/store/apps/details?id=' . $config->ManifestAndroidPackage,
+            ];
+        }
+
+        if ($config->ManifestIOSAppStoreUrl) {
+            $related[] = [
+                'platform' => 'itunes',
+                'url' => $config->ManifestIOSAppStoreUrl,
+            ];
+        }
+
+        return $related;
     }
 }

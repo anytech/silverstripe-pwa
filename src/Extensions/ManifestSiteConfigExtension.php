@@ -37,6 +37,11 @@ class ManifestSiteConfigExtension extends Extension
         'ManifestLang' => 'Varchar(10)',
         'ManifestDir' => 'Varchar(5)',
 
+        // Related native apps (powers getInstalledRelatedApps + native install hints)
+        'ManifestAndroidPackage' => 'Varchar(255)',
+        'ManifestIOSAppStoreUrl' => 'Varchar(255)',
+        'ManifestPreferRelated' => 'Boolean',
+
         // Push notifications & VAPID
         'PushNotification' => 'Boolean',
         'VapidSubject' => 'Varchar(255)',
@@ -214,6 +219,23 @@ class ManifestSiteConfigExtension extends Extension
 
         $fields->addFieldToTab('Root.PWA.Manifest', DropdownField::create('ManifestDir', 'Text Direction', self::$text_directions)
             ->setDescription('Text direction for the app'));
+
+        // Related native apps
+        $fields->addFieldToTab('Root.PWA.Manifest', HeaderField::create('ManifestRelatedHeader', 'Related Native Apps'));
+
+        $fields->addFieldToTab('Root.PWA.Manifest', LiteralField::create('RelatedInfo',
+            '<p class="message info">Link a published native app so the browser can detect when a visitor already has it installed (Android, via getInstalledRelatedApps) and show native install hints. Android also requires a matching /.well-known/assetlinks.json on this domain.</p>'));
+
+        $fields->addFieldToTab('Root.PWA.Manifest', TextField::create('ManifestAndroidPackage', 'Android Package Name')
+            ->setDescription('e.g. nz.co.example.app - the Play Store application ID'));
+
+        $fields->addFieldToTab('Root.PWA.Manifest', TextField::create('ManifestIOSAppStoreUrl', 'iOS App Store URL')
+            ->setDescription('Full App Store listing URL (iOS cannot be install-detected, but this enables native install hints)'));
+
+        $fields->addFieldToTab('Root.PWA.Manifest', DropdownField::create('ManifestPreferRelated', 'Prefer Native App', [
+            0 => 'No - keep the PWA installable (recommended)',
+            1 => 'Yes - point install prompts at the native app',
+        ])->setDescription('Leave as "No" so browsers still offer the PWA install'));
 
         // Shortcuts
         $fields->addFieldToTab('Root.PWA.Manifest', HeaderField::create('ManifestShortcutsHeader', 'App Shortcuts'));
