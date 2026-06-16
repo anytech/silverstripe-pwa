@@ -3,7 +3,7 @@
 namespace SilverStripePWA\Extensions;
 
 use SilverStripe\Core\Extension;
-use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripePWA\Models\PWASettings;
 use SilverStripe\View\Requirements;
 
 class PwaContentControllerExtension extends Extension
@@ -14,7 +14,7 @@ class PwaContentControllerExtension extends Extension
             return;
         }
 
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         if (!$config->PWAEnabled) {
             return;

@@ -14,13 +14,6 @@ SilverStripe\Control\Director:
     'pwa-generate-vapid-keys': 'SilverStripePWA\Controllers\GenerateVapidKeysController'
     'pwa-send-test-push': 'SilverStripePWA\Controllers\SendTestPushController'
 
-SilverStripe\SiteConfig\SiteConfig:
-    extensions:
-        - SilverStripePWA\Extensions\ManifestSiteConfigExtension
-        - SilverStripePWA\Extensions\PushNotificationsSiteConfigExtension
-        - SilverStripePWA\Extensions\ServiceWorkerSiteConfigExtension
-        - SilverStripePWA\Extensions\OfflinePageSiteConfigExtension
-
 SilverStripe\CMS\Controllers\ContentController:
     extensions:
         - SilverStripePWA\Extensions\PwaContentControllerExtension

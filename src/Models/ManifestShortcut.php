@@ -8,7 +8,6 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\AssetAdmin\Forms\UploadField;
-use SilverStripe\SiteConfig\SiteConfig;
 
 /**
  * PWA Manifest Shortcut
@@ -30,7 +29,7 @@ class ManifestShortcut extends DataObject
 
     private static $has_one = [
         'Icon' => Image::class,
-        'SiteConfig' => SiteConfig::class
+        'PWASettings' => PWASettings::class
     ];
 
     private static $owns = [

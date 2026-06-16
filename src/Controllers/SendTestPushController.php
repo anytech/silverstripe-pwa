@@ -6,7 +6,7 @@ use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
-use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripePWA\Models\PWASettings;
 use SilverStripePWA\Services\PushNotificationService;
 
 class SendTestPushController extends Controller
@@ -22,7 +22,7 @@ class SendTestPushController extends Controller
             return $this->httpError(403, 'Admin access required');
         }
 
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         $testMember = $config->getTestMember();
 
         if (!$testMember) {

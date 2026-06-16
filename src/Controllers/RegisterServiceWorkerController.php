@@ -4,7 +4,7 @@ namespace SilverStripePWA\Controllers;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
-use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripePWA\Models\PWASettings;
 
 class RegisterServiceWorkerController extends Controller {
 
@@ -43,7 +43,7 @@ class RegisterServiceWorkerController extends Controller {
      * @return string
      */
     public function PublicKey() {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         return $config->VapidPublicKey ?: '';
     }
     
@@ -55,7 +55,7 @@ class RegisterServiceWorkerController extends Controller {
         if (Director::isDev()) {
             return true;
         }
-        if (SiteConfig::current_site_config()->ServiceWorkerDebug) {
+        if (PWASettings::current()->ServiceWorkerDebug) {
             return true;
         }
         return $this->config()->get('debug_mode');

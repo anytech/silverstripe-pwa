@@ -3,7 +3,7 @@
 namespace SilverStripePWA\Controllers;
 
 use SilverStripe\Control\Controller;
-use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripePWA\Models\PWASettings;
 use SilverStripePWA\Models\Subscriber;
 use SilverStripePWA\Services\WebPushService;
 
@@ -23,7 +23,7 @@ class PushController extends Controller
             return json_encode(['status' => 'No subscribers found']);
         }
 
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         if (!$config->VapidPublicKey || !$config->VapidPrivateKey) {
             return json_encode(['error' => 'VAPID keys not configured. Please generate keys in Settings > Manifest.']);

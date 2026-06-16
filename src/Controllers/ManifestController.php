@@ -3,7 +3,7 @@
 namespace SilverStripePWA\Controllers;
 
 use SilverStripe\Control\Controller;
-use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripePWA\Models\PWASettings;
 use SilverStripe\Control\Director;
 
 class ManifestController extends Controller
@@ -21,7 +21,7 @@ class ManifestController extends Controller
      */
     public function index($url)
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         $baseURL = Director::absoluteBaseURL();
         $manifest = [];
 
@@ -115,10 +115,10 @@ class ManifestController extends Controller
      * Generate icon array for manifest with multiple sizes
      * Includes both standard and maskable icons
      *
-     * @param SiteConfig $config
+     * @param PWASettings $config
      * @return array
      */
-    private function generateIcons(SiteConfig $config): array
+    private function generateIcons(PWASettings $config): array
     {
         $icons = [];
         $sizes = [48, 72, 96, 128, 144, 152, 192, 384, 512];
@@ -159,10 +159,10 @@ class ManifestController extends Controller
     /**
      * Generate screenshots array for manifest
      *
-     * @param SiteConfig $config
+     * @param PWASettings $config
      * @return array
      */
-    private function generateScreenshots(SiteConfig $config): array
+    private function generateScreenshots(PWASettings $config): array
     {
         $screenshots = [];
 
@@ -194,10 +194,10 @@ class ManifestController extends Controller
     /**
      * Generate shortcuts array for manifest
      *
-     * @param SiteConfig $config
+     * @param PWASettings $config
      * @return array
      */
-    private function generateShortcuts(SiteConfig $config): array
+    private function generateShortcuts(PWASettings $config): array
     {
         $shortcuts = [];
 
@@ -215,10 +215,10 @@ class ManifestController extends Controller
      * apps the browser matches against for getInstalledRelatedApps() and native
      * install hints.
      *
-     * @param SiteConfig $config
+     * @param PWASettings $config
      * @return array
      */
-    private function generateRelatedApplications(SiteConfig $config): array
+    private function generateRelatedApplications(PWASettings $config): array
     {
         $related = [];
 

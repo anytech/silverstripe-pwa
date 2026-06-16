@@ -5,7 +5,7 @@ namespace SilverStripePWA\Extensions;
 use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\CheckboxField;
-use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripePWA\Models\PWASettings;
 use SilverStripePWA\Services\PushNotificationService;
 
 class PushPageExtension extends Extension
@@ -30,7 +30,7 @@ class PushPageExtension extends Extension
             return;
         }
 
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         PushNotificationService::create()
             ->setTitle($this->owner->getTitle())

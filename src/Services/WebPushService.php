@@ -2,7 +2,7 @@
 
 namespace SilverStripePWA\Services;
 
-use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripePWA\Models\PWASettings;
 
 /**
  * Native PHP Web Push implementation
@@ -22,7 +22,7 @@ class WebPushService
         $this->subject = $subject;
 
         // Check debug mode from SiteConfig
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         $this->debug = (bool)$config->ServiceWorkerDebug;
     }
 

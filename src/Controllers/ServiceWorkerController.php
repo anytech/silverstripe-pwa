@@ -4,7 +4,7 @@ namespace SilverStripePWA\Controllers;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
-use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripePWA\Models\PWASettings;
 
 class ServiceWorkerController extends Controller
 {
@@ -17,7 +17,7 @@ class ServiceWorkerController extends Controller
         // Suppress PHP warnings/errors from appearing in JS output
         @ini_set('display_errors', 0);
         
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         // Check if service worker is disabled
         if ($config->hasField('ServiceWorkerEnabled') && !$config->ServiceWorkerEnabled) {
@@ -37,13 +37,13 @@ class ServiceWorkerController extends Controller
 
     public function PublicKey()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         return $config->VapidPublicKey ?: '';
     }
 
     public function DebugMode()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         if (Director::isDev()) {
             return true;
@@ -54,33 +54,33 @@ class ServiceWorkerController extends Controller
 
     public function CacheStrategy()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         $strategy = $config->hasField('CacheStrategy') ? $config->CacheStrategy : null;
         return $strategy ?: 'network-first';
     }
 
     public function CacheVersion()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         $version = $config->hasField('CacheVersion') ? $config->CacheVersion : null;
         return $version ?: 'v1';
     }
 
     public function OfflineModeEnabled()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         return !$config->hasField('OfflineModeEnabled') || $config->OfflineModeEnabled;
     }
 
     public function PushNotificationsEnabled()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         return !$config->hasField('PushNotificationsEnabled') || $config->PushNotificationsEnabled;
     }
 
     public function PrecacheUrls()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         if ($config->hasMethod('getPrecacheUrlsArray')) {
             return json_encode($config->getPrecacheUrlsArray());
@@ -91,7 +91,7 @@ class ServiceWorkerController extends Controller
 
     public function ExcludeUrlPatterns()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         if ($config->hasMethod('getExcludeUrlPatternsArray')) {
             return json_encode($config->getExcludeUrlPatternsArray());
@@ -102,7 +102,7 @@ class ServiceWorkerController extends Controller
 
     public function CacheMaxAge()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         $maxAge = $config->hasField('CacheMaxAge') ? (int)$config->CacheMaxAge : 0;
         return $maxAge ?: 86400;
     }
@@ -112,7 +112,7 @@ class ServiceWorkerController extends Controller
      */
     public function NotificationActions()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         if ($config->hasMethod('getNotificationActions')) {
             return json_encode($config->getNotificationActions());

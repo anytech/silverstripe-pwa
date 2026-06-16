@@ -3,7 +3,7 @@
 namespace SilverStripePWA\Controllers;
 
 use SilverStripe\Control\Controller;
-use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripePWA\Models\PWASettings;
 
 class OfflinePageController extends Controller
 {
@@ -19,43 +19,43 @@ class OfflinePageController extends Controller
 
     public function OfflineTitle()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         return $config->OfflineTitle ?: "You're Offline";
     }
 
     public function OfflineMessage()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         return $config->OfflineMessage ?: "It looks like you've lost your internet connection. Please check your network and try again.";
     }
 
     public function OfflineButtonText()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         return $config->OfflineButtonText ?: 'Try Again';
     }
 
     public function OfflineBackgroundColor()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         return $config->OfflineBackgroundColor ?: '#1a1a2e';
     }
 
     public function OfflineTextColor()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         return $config->OfflineTextColor ?: '#ffffff';
     }
 
     public function OfflineAccentColor()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         return $config->OfflineAccentColor ?: '#e94560';
     }
 
     public function OfflineIcon()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         return $config->OfflineIcon ?: '📡';
     }
 }

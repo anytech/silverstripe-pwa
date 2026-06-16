@@ -2,7 +2,7 @@
 
 namespace SilverStripePWA\Services;
 
-use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripePWA\Models\PWASettings;
 use SilverStripe\Security\Member;
 use SilverStripePWA\Models\Subscriber;
 use SilverStripePWA\Services\ExpoPushService;
@@ -48,7 +48,7 @@ class PushNotificationService
 
     public function __construct()
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         $this->debug = (bool)$config->ServiceWorkerDebug;
     }
 
@@ -179,7 +179,7 @@ class PushNotificationService
      */
     public function sendToAll(): array
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         $this->log('sendToAll called');
 
@@ -211,7 +211,7 @@ class PushNotificationService
      */
     public function sendToMember(Member $member): array
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         // Check if push is globally disabled
         if ($config->hasMethod('PushNotificationsEnabled') && !$config->PushNotificationsEnabled) {
@@ -237,7 +237,7 @@ class PushNotificationService
      */
     public function sendToMembers($members): array
     {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         // Check if push is globally disabled
         if ($config->hasMethod('PushNotificationsEnabled') && !$config->PushNotificationsEnabled) {
@@ -290,7 +290,7 @@ class PushNotificationService
             return ['status' => 'No subscribers found'];
         }
 
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
 
         $payload = $this->buildPayload($config);
         $this->log('Built payload', ['payload' => $payload]);
@@ -372,7 +372,7 @@ class PushNotificationService
     /**
      * Build the notification payload
      */
-    private function buildPayload(SiteConfig $config): string
+    private function buildPayload(PWASettings $config): string
     {
         $payload = [
             'title' => $this->title,

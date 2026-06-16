@@ -2,7 +2,7 @@
 
 namespace SilverStripePWA\Services;
 
-use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripePWA\Models\PWASettings;
 
 class ExpoPushService
 {
@@ -11,7 +11,7 @@ class ExpoPushService
     private bool $debug = false;
 
     public function __construct() {
-        $config = SiteConfig::current_site_config();
+        $config = PWASettings::current();
         $this->debug = (bool)$config->ServiceWorkerDebug;
     }
 
