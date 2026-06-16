@@ -16,9 +16,9 @@ class PWAAdmin extends ModelAdmin {
     private static $menu_icon_class = 'font-icon-mobile';
 
     private static $managed_models = [
-        PWASettings::class => ['title' => 'Settings'],
         PushAnnouncement::class => ['title' => 'Announcements'],
         Subscriber::class => ['title' => 'Subscribers'],
+        PWASettings::class => ['title' => 'Settings'],
     ];
 
     private static $allowed_actions = [
