@@ -14,6 +14,7 @@ use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Forms\TabSet;
 use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
@@ -286,7 +287,7 @@ class PWASettings extends DataObject
 
     public function getCMSFields(): FieldList
     {
-        $fields = FieldList::create();
+        $fields = FieldList::create(TabSet::create('Root'));
 
         $this->buildManifestFields($fields);
         $this->buildOfflineFields($fields);
