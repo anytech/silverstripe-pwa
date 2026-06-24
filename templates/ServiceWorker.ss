@@ -35,10 +35,16 @@ const log = (...args) => DEBUG && console.log('[SW]', ...args);
  * Check if URL should be excluded from caching
  */
 function shouldExclude(url) {
-    const urlPath = new URL(url).pathname;
+    const parsed = new URL(url);
+    const urlPath = parsed.pathname;
 
     // Always exclude admin and dev routes
     if (urlPath.startsWith('/admin') || urlPath.startsWith('/dev') || urlPath.startsWith('/Security')) {
+        return true;
+    }
+
+    // Never cache CMS preview / draft-stage requests, so the admin preview iframe always gets fresh content
+    if (parsed.searchParams.get('CMSPreview') === '1' || parsed.searchParams.get('stage') === 'Stage') {
         return true;
     }
 
