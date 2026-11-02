@@ -4,6 +4,7 @@ namespace SilverStripePWA\Services;
 
 use SilverStripePWA\Models\PWASettings;
 use SilverStripe\Security\Member;
+use SilverStripePWA\Models\PushLog;
 use SilverStripePWA\Models\Subscriber;
 use SilverStripePWA\Services\ExpoPushService;
 use SilverStripePWA\Services\WebPushService;
@@ -183,13 +184,11 @@ class PushNotificationService
 
         $this->log('sendToAll called');
 
-        // Check if push is globally disabled
         if ($config->hasMethod('PushNotificationsEnabled') && !$config->PushNotificationsEnabled) {
             $this->log('Push notifications are disabled globally');
             return ['status' => 'Push notifications are disabled'];
         }
 
-        // Check test mode - only send to test user
         if ($config->PushTestMode) {
             $this->log('Test mode is enabled');
             $testMember = $config->getTestMember();
@@ -203,7 +202,7 @@ class PushNotificationService
 
         $subscribers = Subscriber::get();
         $this->log('Sending to all subscribers', ['count' => $subscribers->count()]);
-        return $this->sendToSubscribers($subscribers);
+        return $this->sendToSubscribers($subscribers, 'All');
     }
 
     /**
@@ -213,12 +212,10 @@ class PushNotificationService
     {
         $config = PWASettings::current();
 
-        // Check if push is globally disabled
         if ($config->hasMethod('PushNotificationsEnabled') && !$config->PushNotificationsEnabled) {
             return ['status' => 'Push notifications are disabled'];
         }
 
-        // In test mode, only allow sending to test member
         if ($config->PushTestMode) {
             $testMember = $config->getTestMember();
             if (!$testMember || $testMember->ID !== $member->ID) {
@@ -227,7 +224,7 @@ class PushNotificationService
         }
 
         $subscribers = Subscriber::get()->filter('MemberID', $member->ID);
-        return $this->sendToSubscribers($subscribers);
+        return $this->sendToSubscribers($subscribers, 'Member');
     }
 
     /**
@@ -239,12 +236,10 @@ class PushNotificationService
     {
         $config = PWASettings::current();
 
-        // Check if push is globally disabled
         if ($config->hasMethod('PushNotificationsEnabled') && !$config->PushNotificationsEnabled) {
             return ['status' => 'Push notifications are disabled'];
         }
 
-        // In test mode, only send to test member if in the list
         if ($config->PushTestMode) {
             $testMember = $config->getTestMember();
             if ($testMember) {
@@ -268,15 +263,10 @@ class PushNotificationService
         }
 
         $subscribers = Subscriber::get()->filter('MemberID', $memberIDs);
-        return $this->sendToSubscribers($subscribers);
+        return $this->sendToSubscribers($subscribers, 'Members');
     }
 
-    /**
-     * Send to specific subscriber records (bypasses test mode - use with caution)
-     *
-     * @param \SilverStripe\ORM\DataList $subscribers
-     */
-    public function sendToSubscribers($subscribers): array
+    public function sendToSubscribers($subscribers, string $target = 'Subscribers'): array
     {
         $count = $subscribers->count();
         $this->log('Starting push notification send', [
@@ -294,6 +284,8 @@ class PushNotificationService
 
         $payload = $this->buildPayload($config);
         $this->log('Built payload', ['payload' => $payload]);
+
+        $history = PushLog::start($this->title, $this->body, $this->url, $target, $count);
 
         $webPush = null;
         $expoPush = null;
@@ -326,6 +318,7 @@ class PushNotificationService
                     if (!$config->VapidPublicKey || !$config->VapidPrivateKey) {
                         $this->log('VAPID keys not configured');
                         $response[$subscriber->endpoint] = 'VAPID keys not configured';
+                        $history->record($subscriber, ['success' => false, 'expired' => false, 'message' => 'VAPID keys not configured']);
                         $failCount++;
                         continue;
                     }
@@ -346,6 +339,8 @@ class PushNotificationService
                 );
             }
 
+            $history->record($subscriber, $result);
+
             if ($result['success']) {
                 $response[$subscriber->endpoint] = 'Delivered';
                 $successCount++;
@@ -360,6 +355,8 @@ class PushNotificationService
                 $failCount++;
             }
         }
+
+        $history->write();
 
         $this->log('Push notification send complete', [
             'success' => $successCount,

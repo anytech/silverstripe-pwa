@@ -67,6 +67,7 @@ class PWASettings extends DataObject
         'PushAction1Url' => 'Varchar(255)',
         'PushAction2Text' => 'Varchar(50)',
         'PushAction2Url' => 'Varchar(255)',
+        'PushHistoryDays' => 'Int',
 
         // Offline page
         'OfflineTitle' => 'Varchar(255)',
@@ -141,6 +142,7 @@ class PWASettings extends DataObject
         'PushSilent' => false,
         'PushRenotify' => false,
         'vibrate' => '[200,100,200]',
+        'PushHistoryDays' => 90,
     ];
 
     private static $displays = [
@@ -519,6 +521,10 @@ class PWASettings extends DataObject
             ->setDescription('Text for second action button (e.g., "Dismiss", "Later")'));
         $fields->addFieldToTab($tab, TextField::create('PushAction2Url', 'Action 2 URL')
             ->setDescription('URL to open when action 2 is clicked (leave empty to just dismiss)'));
+
+        $fields->addFieldToTab($tab, HeaderField::create('PushHistoryHeader', 'Push History'));
+        $fields->addFieldToTab($tab, NumericField::create('PushHistoryDays', 'Keep History (days)')
+            ->setDescription('Sends older than this are deleted, with their deliveries, the next time a push is sent. 0 keeps history forever.'));
 
         $fields->addFieldToTab($tab, HeaderField::create('PushSendTestHeader', 'Send Test Notification'));
         $fields->addFieldToTab($tab, LiteralField::create('PushSendTestInfo',

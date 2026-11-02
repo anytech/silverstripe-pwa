@@ -8,6 +8,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\FormAction;
 use SilverStripePWA\Models\PWASettings;
 use SilverStripePWA\Models\PushAnnouncement;
+use SilverStripePWA\Models\PushLog;
 use SilverStripePWA\Models\Subscriber;
 
 class PWAAdmin extends ModelAdmin {
@@ -17,6 +18,7 @@ class PWAAdmin extends ModelAdmin {
 
     private static $managed_models = [
         PushAnnouncement::class => ['title' => 'Announcements'],
+        PushLog::class => ['title' => 'History'],
         Subscriber::class => ['title' => 'Subscribers'],
         PWASettings::class => ['title' => 'Settings'],
     ];
@@ -55,7 +57,7 @@ class PWAAdmin extends ModelAdmin {
 
     public function getList() {
         $list = parent::getList();
-        if (in_array($this->getModelClass(), [PushAnnouncement::class, Subscriber::class], true)) {
+        if (in_array($this->getModelClass(), [PushAnnouncement::class, PushLog::class, Subscriber::class], true)) {
             $list = $list->sort('Created', 'DESC');
         }
         return $list;

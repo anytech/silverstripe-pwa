@@ -4,6 +4,7 @@ namespace SilverStripePWA\Controllers;
 
 use SilverStripe\Control\Controller;
 use SilverStripePWA\Models\PWASettings;
+use SilverStripePWA\Models\PushLog;
 use SilverStripePWA\Models\Subscriber;
 use SilverStripePWA\Services\WebPushService;
 
@@ -37,6 +38,19 @@ class PushController extends Controller
             $vapidSubject
         );
 
+        $notification = json_decode($content, true);
+        if (!is_array($notification)) {
+            $notification = [];
+        }
+
+        $history = PushLog::start(
+            (string)($notification['title'] ?? ''),
+            (string)($notification['message'] ?? ''),
+            isset($notification['url']) ? (string)$notification['url'] : null,
+            'API',
+            $subscribers->count()
+        );
+
         $response = [];
 
         foreach ($subscribers as $subscriber) {
@@ -47,6 +61,8 @@ class PushController extends Controller
             ];
 
             $result = $webPush->send($subscription, $content);
+
+            $history->record($subscriber, $result);
 
             if ($result['success']) {
                 $response[$subscriber->endpoint] = 'Delivered';
@@ -59,6 +75,8 @@ class PushController extends Controller
                 }
             }
         }
+
+        $history->write();
 
         $this->getResponse()->addHeader('Content-Type', 'application/json; charset=utf-8');
         return json_encode($response);

@@ -111,6 +111,16 @@ CMS users can compose and send broadcast push notifications without touching cod
 
 Sent announcements are read-only for an audit trail. The Subscribers tab in the same admin shows every subscriber (web + mobile) with their type and platform.
 
+## Push History
+
+Every dispatch is recorded under **PWA** > **History**, whatever triggered it: announcements, the page-publish trigger, the test push, `PushNotificationService` calls from code, and the `/push` endpoint. Each `PushLog` row stores the title, message, click URL, target (`All`, `Member`, `Members`, `Subscribers`, `API`), whether test mode was on, and the recipient, delivered, failed, and expired counts.
+
+Open a row to see its `PushDelivery` records: one per subscriber, with type, platform, member, endpoint or token, status, and the push service error for failures. Delivery rows keep the endpoint after an expired subscription is removed from `Subscriber`.
+
+History is read-only. Deleting a `PushLog` row deletes its deliveries.
+
+Retention is set in Settings > PWA > Push Notifications > **Keep History (days)**. Each new send first deletes history and deliveries older than that many days, so no cron is needed. `0` keeps history forever. New installs start at 90 days. Sites upgrading from an earlier version keep history forever until a value is saved, because `dev/build` adds the column as `0` on the existing settings row. A send with zero matching subscribers (for example `sendToMember()` for a member with no devices) is not recorded.
+
 ## Sending from Code
 
 Use `PushNotificationService` to dispatch from anywhere — it fans out across web AND native subscribers automatically:
